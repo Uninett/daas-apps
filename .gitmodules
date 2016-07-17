@@ -1,0 +1,3 @@
+[submodule "genomics/SparkBWA"]
+	path = genomics/SparkBWA
+	url = https://github.com/citiususc/SparkBWA
