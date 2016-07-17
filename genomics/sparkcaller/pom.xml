@@ -54,6 +54,8 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
+        <!-- The reason why RC1 is used, is that the GATK toolkit uses methods
+             which were changed when the final version was released. -->
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
