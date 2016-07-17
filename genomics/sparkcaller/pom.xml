@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.sparkcaller</groupId>
+    <artifactId>sparkcaller</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+      <repositories>
+        <repository>
+          <id>128</id>
+          <name>mvn.128.no</name>
+          <url>https://mvn.128.no/maven2</url>
+        </repository>
+      </repositories>
+
+    <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>2.4.3</version>
+                    <executions>
+                      <execution>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                          <artifactSet>
+                            <excludes>
+                              <exclude>org.apache.spark</exclude>
+                            </excludes>
+                          </artifactSet>
+                        </configuration>
+                      </execution>
+                    </executions>
+                  </plugin>
+
+            </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.10</artifactId>
+            <version>1.5.1</version>
+            <!--<scope>provided</scope>-->
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.9-RC1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.github.broadinstitute/picard -->
+        <dependency>
+            <groupId>com.github.broadinstitute</groupId>
+            <artifactId>picard</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.broadinstitute.gatk</groupId>
+            <artifactId>gatk-package-distribution</artifactId>
+            <version>3.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.seqdoop</groupId>
+                    <artifactId>hadoop-bam</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+    </dependencies>
+</project>
