@@ -9,6 +9,8 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
+      <!-- GATK is not hosted at maven central, so obtain it from my (paalka's
+           private mirror) -->
       <repositories>
         <repository>
           <id>128</id>
