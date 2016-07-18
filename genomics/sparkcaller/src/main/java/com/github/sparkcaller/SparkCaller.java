@@ -171,11 +171,9 @@ public class SparkCaller {
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
-
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
+
         caller.runPipeline(pathToSAMFiles, pathToReference, knownSites, toolsExtraArguments);
-
-
     }
 
     public static JavaSparkContext initSpark(String appName) {
