@@ -151,6 +151,9 @@ public class SparkCaller {
             cmd = parser.parse(options, argv);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
+            formatter.printHelp("Sparkcaller", "", options,
+                                "See https://github.com/UNINETT/daas-apps/tree/master/genomics for documentation.",
+                                true);
 
             System.exit(1);
             return null;
