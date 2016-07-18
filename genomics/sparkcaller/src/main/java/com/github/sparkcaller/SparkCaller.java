@@ -2,6 +2,7 @@ package com.github.sparkcaller;
 
 import com.github.sparkcaller.preprocessing.*;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
+import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -102,16 +103,59 @@ public class SparkCaller {
         return variantsVCFFiles;
     }
 
+    public static Options initCommandLineOptions() {
+        Options options = new Options();
+
+        Option reference = new Option("R", "Reference", true, "The path to the reference file.");
+        reference.setRequired(true);
+        options.addOption(reference);
+
+        Option inputFolder = new Option("I", "InputFolder", true, "The path to the folder containing the input files.");
+        inputFolder.setRequired(true);
+        options.addOption(inputFolder);
+
+        Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
+        knownSites.setRequired(true);
+        options.addOption(knownSites);
+
+        Option configFile = new Option("C", "ConfigFile", true, "The path to the file configuration file.");
+        configFile.setRequired(true);
+        options.addOption(configFile);
+
+        return options;
+    }
+
+    public static CommandLine parseCommandLineOptions(Options options, String[] argv) {
+        CommandLineParser parser = new GnuParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+        try {
+            cmd = parser.parse(options, argv);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+
+            System.exit(1);
+            return null;
+        }
+
+        return cmd;
+    }
+
     public static void main(String argv[]) throws Exception {
-        JavaSparkContext sparkContext = initSpark("SparkCaller", "local[*]");
-        String pathToReference = "/home/paal/Desktop/genomics/hg19/ucsc.hg19.fasta";
-        String pathToSAMFiles = "/home/paal/Desktop/genomics/out/";
-        String knownSites = "/home/paal/Desktop/genomics/dbsnp/human/common_all_20160407.vcf";
-        String configFilepath = "/home/paal/Desktop/kek.properties";
 
+        Options options = SparkCaller.initCommandLineOptions();
+        CommandLine cmdArgs = parseCommandLineOptions(options, argv);
+
+        JavaSparkContext sparkContext = initSpark("SparkCaller");
         SparkCaller caller = new SparkCaller(sparkContext);
-        Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
 
+        String pathToReference = cmdArgs.getOptionValue("Reference");
+        String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
+        String knownSites = cmdArgs.getOptionValue("KnownSites");
+        String configFilepath = cmdArgs.getOptionValue("ConfigFile");
+
+        Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
         JavaRDD<File> preprocessedBAMFiles = caller.preprocessSAMFiles(pathToSAMFiles, pathToReference, knownSites,
                                                                        toolsExtraArguments);
 
@@ -124,8 +168,8 @@ public class SparkCaller {
         }
     }
 
-    public static JavaSparkContext initSpark(String appName, String masterUrl) {
-        SparkConf conf = new SparkConf().setAppName(appName).setMaster(masterUrl);
+    public static JavaSparkContext initSpark(String appName) {
+        SparkConf conf = new SparkConf().setAppName(appName);
         JavaSparkContext sparkContext = new JavaSparkContext(conf);
 
         return sparkContext;
