@@ -162,9 +162,9 @@ public class SparkCaller {
     public static void main(String argv[]) throws Exception {
 
         Options options = SparkCaller.initCommandLineOptions();
-        CommandLine cmdArgs = parseCommandLineOptions(options, argv);
+        CommandLine cmdArgs = SparkCaller.parseCommandLineOptions(options, argv);
 
-        JavaSparkContext sparkContext = initSpark("SparkCaller");
+        JavaSparkContext sparkContext = SparkCaller.initSpark("SparkCaller");
         SparkCaller caller = new SparkCaller(sparkContext);
 
         String pathToReference = cmdArgs.getOptionValue("Reference");
