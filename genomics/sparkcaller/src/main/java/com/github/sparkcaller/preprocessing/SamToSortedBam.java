@@ -1,5 +1,6 @@
 package com.github.sparkcaller.preprocessing;
 
+import com.github.sparkcaller.Utils;
 import org.apache.spark.api.java.function.Function;
 import picard.sam.SortSam;
 
@@ -8,8 +9,7 @@ import java.util.ArrayList;
 
 public class SamToSortedBam implements Function<File, File> {
     public File call(File file) throws Exception {
-        final String ext = "sam";
-        String newFileName = file.getPath().substring(0, file.getPath().length() - ext.length()) + "bam";
+        String newFileName = Utils.removeExtenstion(file.getPath(), "sam") + ".bam";
         File outputSamFile = new File(newFileName);
 
         ArrayList<String> sorterArgs = new ArrayList<String>();
