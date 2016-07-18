@@ -103,6 +103,23 @@ public class SparkCaller {
         return variantsVCFFiles;
     }
 
+    public List<File> runPipeline(String pathToSAMFiles, String pathToReference,
+                                  String knownSites, Properties toolsExtraArguments) {
+
+        JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles, pathToReference, knownSites,
+                toolsExtraArguments);
+
+        if (preprocessedBAMFiles != null) {
+            JavaRDD<File> variantsVCFFiles = discoverVariants(preprocessedBAMFiles, pathToReference,
+                                                              toolsExtraArguments);
+            List<File> outputFiles = variantsVCFFiles.collect();
+            return outputFiles;
+        } else {
+            System.err.println("Could not preprocess SAM files!");
+            return null;
+        }
+    }
+
     public static Options initCommandLineOptions() {
         Options options = new Options();
 
@@ -156,16 +173,9 @@ public class SparkCaller {
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
 
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
-        JavaRDD<File> preprocessedBAMFiles = caller.preprocessSAMFiles(pathToSAMFiles, pathToReference, knownSites,
-                                                                       toolsExtraArguments);
+        caller.runPipeline(pathToSAMFiles, pathToReference, knownSites, toolsExtraArguments);
 
-        if (preprocessedBAMFiles != null) {
-            JavaRDD<File> variantsVCFFiles = caller.discoverVariants(preprocessedBAMFiles, pathToReference,
-                    toolsExtraArguments);
-            List<File> outputFiles = variantsVCFFiles.collect();
-        } else {
-            System.err.println("Could not preprocess SAM files!");
-        }
+
     }
 
     public static JavaSparkContext initSpark(String appName) {
