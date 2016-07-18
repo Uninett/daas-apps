@@ -1,10 +1,8 @@
 package com.github.sparkcaller.variantdiscovery;
 
 import com.github.sparkcaller.BaseGATKProgram;
-import org.broadinstitute.gatk.engine.CommandLineGATK;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GenotypeGVCF extends BaseGATKProgram {
