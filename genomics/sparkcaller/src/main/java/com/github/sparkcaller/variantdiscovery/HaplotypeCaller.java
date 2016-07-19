@@ -19,6 +19,6 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<File, F
         setOutputFile(outputFilename);
 
         executeProgram();
-        return bamFile;
+        return new File(outputFilename);
     }
 }
