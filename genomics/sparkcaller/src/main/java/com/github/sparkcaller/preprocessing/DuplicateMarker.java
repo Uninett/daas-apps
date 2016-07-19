@@ -7,6 +7,9 @@ import picard.sam.markduplicates.MarkDuplicates;
 import java.io.File;
 import java.util.ArrayList;
 
+/*
+ * Marks all the duplicate reads found in the input BAM file.
+ */
 public class DuplicateMarker implements Function<File, File> {
     final private ArrayList<String> extraArgs;
 

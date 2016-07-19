@@ -7,6 +7,15 @@ import scala.Tuple2;
 
 import java.io.File;
 
+/*
+ * Recalibrate the base quality scores inorder to get more accurate scores.
+ *
+ * See:
+ * https://www.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_bqsr_BaseRecalibrator.php
+ *
+ * For more information.
+ *
+ */
 public class BQSRTargetGenerator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
 
     public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs) {
