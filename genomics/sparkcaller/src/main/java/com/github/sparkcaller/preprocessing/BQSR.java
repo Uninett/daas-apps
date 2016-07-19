@@ -15,7 +15,7 @@ import java.io.File;
  *
  * https://www.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_readutils_PrintReads.php
  *
- * For more documentation.
+ * For more information.
  *
  */
 public class BQSR extends BaseGATKProgram implements Function<Tuple2<File, File>, File> {
