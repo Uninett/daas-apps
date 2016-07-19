@@ -18,10 +18,30 @@ import java.util.Properties;
 public class SparkCaller {
     final private JavaSparkContext sparkContext;
     final private Logger log;
+    private String pathToReference;
+    private String knownSites;
+    private Properties toolsExtraArgs;
 
-    public SparkCaller(JavaSparkContext sparkContext) {
+    /*
+     * The SparkCaller is used for managing the workflow
+     * @param pathToReference   the path to the file to use as a reference.
+     *                         Keep in mind that this file has to be reachable by all nodes, and has to be indexed.
+     *
+     * @param pathToReference   the path to the file containing the dbsnp to use when ex. performing BQSR.
+     *                         Keep in mind that this file has to be reachable by all nodes.
+     *
+     * @param toolsExtraArguments   the Properties object containing strings of extra arguments to pass to each tool.
+     *
+     */
+    public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
+                       Properties toolsExtraArguments) {
+
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
+
+        this.pathToReference = pathToReference;
+        this.toolsExtraArgs = toolsExtraArguments;
+        this.knownSites = knownSites;
     }
 
     /* Performs the preprocessing stage of the GATK pipeline.
@@ -163,12 +183,10 @@ public class SparkCaller {
     }
 
     public static void main(String argv[]) throws Exception {
-
         Options options = SparkCaller.initCommandLineOptions();
         CommandLine cmdArgs = SparkCaller.parseCommandLineOptions(options, argv);
 
         JavaSparkContext sparkContext = SparkCaller.initSpark("SparkCaller");
-        SparkCaller caller = new SparkCaller(sparkContext);
 
         String pathToReference = cmdArgs.getOptionValue("Reference");
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
@@ -176,7 +194,8 @@ public class SparkCaller {
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
 
-        caller.runPipeline(pathToSAMFiles, pathToReference, knownSites, toolsExtraArguments);
+        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites, toolsExtraArguments);
+        caller.runPipeline(pathToSAMFiles);
     }
 
     public static JavaSparkContext initSpark(String appName) {
