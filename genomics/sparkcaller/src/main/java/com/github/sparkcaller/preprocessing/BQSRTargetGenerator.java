@@ -8,6 +8,7 @@ import scala.Tuple2;
 import java.io.File;
 
 public class BQSRTargetGenerator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
+
     public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs) {
         super("BaseRecalibrator", extraArgs);
         setReference(pathToReference);

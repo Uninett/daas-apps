@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class SamToSortedBam implements Function<File, File> {
     public File call(File file) throws Exception {
-        String newFileName = Utils.removeExtenstion(file.getPath(), "sam") + ".bam";
+        String newFileName = Utils.removeExtenstion(file.getName(), "sam") + ".bam";
         File outputSamFile = new File(newFileName);
 
         ArrayList<String> sorterArgs = new ArrayList<String>();
