@@ -70,19 +70,8 @@ public class SparkCaller {
             this.log.info("Creating BAM indexes...");
             bamFilesRDD = bamFilesRDD.map(new BamIndexer());
 
-            this.log.info("Creating indel targets...");
-            JavaRDD<Tuple2<File, File>> indelTargetsRDD = bamFilesRDD.map(new IndelTargetCreator(pathToReference,
-                                                                          toolsExtraArguments.getProperty("RealignerTargetCreator")));
-
-            this.log.info("Realigning indels...");
-            bamFilesRDD = indelTargetsRDD.map(new RealignIndels(pathToReference));
-
-            this.log.info("Creating targets on which to perform BQSR...");
-            JavaRDD<Tuple2<File, File>> bqsrTables = bamFilesRDD.map(new BQSRTargetGenerator(pathToReference, knownSites,
-                                                                     toolsExtraArguments.getProperty("BaseRecalibrator")));
-
-            this.log.info("Performing BQSR...");
-            bamFilesRDD = bqsrTables.map(new BQSR(pathToReference, toolsExtraArguments.getProperty("PrintReads")));
+            bamFilesRDD = realignIndels(bamFilesRDD);
+            bamFilesRDD = performBQSR(bamFilesRDD);
 
             this.log.info("Preprocessing finished!");
             return bamFilesRDD;
@@ -90,6 +79,29 @@ public class SparkCaller {
 
         return null;
 
+    }
+
+    public JavaRDD<File> performBQSR(JavaRDD<File> bamFilesRDD) {
+        this.log.info("Creating targets on which to perform BQSR...");
+        JavaRDD<Tuple2<File, File>> bqsrTables = bamFilesRDD.map(new BQSRTargetGenerator(this.pathToReference,
+                                                                                         this.knownSites,
+                                                                 this.toolsExtraArgs.getProperty("BaseRecalibrator")));
+
+        this.log.info("Performing BQSR...");
+        bamFilesRDD = bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads")));
+
+        return bamFilesRDD;
+    }
+
+    public JavaRDD<File> realignIndels(JavaRDD<File> bamFilesRDD) {
+        this.log.info("Creating indel targets...");
+        JavaRDD<Tuple2<File, File>> indelTargetsRDD = bamFilesRDD.map(new IndelTargetCreator(this.pathToReference,
+                                                            this.toolsExtraArgs.getProperty("RealignerTargetCreator")));
+
+        this.log.info("Realigning indels...");
+        bamFilesRDD = indelTargetsRDD.map(new RealignIndels(this.pathToReference));
+
+        return bamFilesRDD;
     }
 
     /* Performs the variant discovery stage of the GATK pipeline.
