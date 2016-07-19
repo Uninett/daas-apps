@@ -88,9 +88,7 @@ public class SparkCaller {
                                                                  this.toolsExtraArgs.getProperty("BaseRecalibrator")));
 
         this.log.info("Performing BQSR...");
-        bamFilesRDD = bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads")));
-
-        return bamFilesRDD;
+        return bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads")));
     }
 
     public JavaRDD<File> realignIndels(JavaRDD<File> bamFilesRDD) {
@@ -99,10 +97,8 @@ public class SparkCaller {
                                                             this.toolsExtraArgs.getProperty("RealignerTargetCreator")));
 
         this.log.info("Realigning indels...");
-        bamFilesRDD = indelTargetsRDD.map(new RealignIndels(this.pathToReference,
+        return indelTargetsRDD.map(new RealignIndels(this.pathToReference,
                                                             this.toolsExtraArgs.getProperty("IndelRealigner")));
-
-        return bamFilesRDD;
     }
 
     /* Performs the variant discovery stage of the GATK pipeline.
