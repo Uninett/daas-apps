@@ -58,7 +58,7 @@ public class SparkCaller {
 
         if (samFiles != null) {
             this.log.info("Distributing the SAM files to the nodes...");
-            JavaRDD<File> samFilesRDD = sparkContext.parallelize(samFiles);
+            JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
 
             this.log.info("Converting the SAM files to sorted BAM files...");
             JavaRDD<File> bamFilesRDD = samFilesRDD.map(new SamToSortedBam());
