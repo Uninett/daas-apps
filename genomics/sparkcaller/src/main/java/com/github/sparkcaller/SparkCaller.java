@@ -99,7 +99,8 @@ public class SparkCaller {
                                                             this.toolsExtraArgs.getProperty("RealignerTargetCreator")));
 
         this.log.info("Realigning indels...");
-        bamFilesRDD = indelTargetsRDD.map(new RealignIndels(this.pathToReference));
+        bamFilesRDD = indelTargetsRDD.map(new RealignIndels(this.pathToReference,
+                                                            this.toolsExtraArgs.getProperty("IndelRealigner")));
 
         return bamFilesRDD;
     }
