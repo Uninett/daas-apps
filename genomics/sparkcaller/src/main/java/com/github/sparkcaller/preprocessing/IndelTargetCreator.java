@@ -15,8 +15,6 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
     }
 
     public Tuple2<File, File> call(File file) throws Exception {
-        ArrayList<String> indelArgs = new ArrayList<String>();
-
         setInputFile(file.getPath());
 
         final String outputIntervalsFilename = Utils.removeExtenstion(file.getPath(), "bam") + "-target.intervals";
