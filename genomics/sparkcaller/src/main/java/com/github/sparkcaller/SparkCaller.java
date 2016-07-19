@@ -119,8 +119,13 @@ public class SparkCaller {
         return variantsVCFFiles;
     }
 
-    public List<File> runPipeline(String pathToSAMFiles, String pathToReference,
-                                  String knownSites, Properties toolsExtraArguments) {
+    /*
+     * Handles the initialization of the pipeline, as well as running the actual pipeline in the correct order.
+     *
+     * @param pathToSAMFiles   the path to the folder containing the SAM files created by the aligner.
+     *
+     */
+    public List<File> runPipeline(String pathToSAMFiles) {
 
         JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
 
