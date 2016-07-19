@@ -64,7 +64,7 @@ public class SparkCaller {
             JavaRDD<File> bamFilesRDD = samFilesRDD.map(new SamToSortedBam());
 
             this.log.info("Marking duplicates...");
-            bamFilesRDD = bamFilesRDD.map(new DuplicateMarker(toolsExtraArguments.getProperty("MarkDuplicates")));
+            bamFilesRDD = bamFilesRDD.map(new DuplicateMarker(this.toolsExtraArgs.getProperty("MarkDuplicates")));
 
             // Create an index, since this is required by the indel realigner
             this.log.info("Creating BAM indexes...");
