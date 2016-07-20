@@ -18,9 +18,10 @@ import java.io.File;
  *
  */
 public class BQSR extends BaseGATKProgram implements Function<Tuple2<File, File>, File> {
-    public BQSR(String pathToReference, String extraArgsString) {
+    public BQSR(String pathToReference, String extraArgsString, String coresPerNode) {
         super("PrintReads", extraArgsString);
         setReference(pathToReference);
+        setThreads(coresPerNode);
     }
 
     public File call(Tuple2<File, File> bqsrTablePair) throws Exception {

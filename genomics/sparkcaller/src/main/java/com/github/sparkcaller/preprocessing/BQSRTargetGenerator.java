@@ -18,10 +18,11 @@ import java.io.File;
  */
 public class BQSRTargetGenerator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
 
-    public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs) {
+    public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs, String coresPerNode) {
         super("BaseRecalibrator", extraArgs);
         setReference(pathToReference);
         addArgument("-knownSites", knownSites);
+        setThreads(coresPerNode);
     }
 
     public Tuple2<File, File> call(File file) throws Exception {

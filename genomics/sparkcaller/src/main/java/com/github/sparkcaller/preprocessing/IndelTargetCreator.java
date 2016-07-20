@@ -18,9 +18,10 @@ import java.util.ArrayList;
  *
  */
 public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
-    public IndelTargetCreator(String pathToReference, String extraArgsString) {
+    public IndelTargetCreator(String pathToReference, String extraArgsString, String coresPerNode) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
+        addArgument("-nt", coresPerNode); // The target creator is better optimized for multiple data threads.
     }
 
     public Tuple2<File, File> call(File file) throws Exception {

@@ -21,6 +21,7 @@ public class SparkCaller {
     private String pathToReference;
     private String knownSites;
     private Properties toolsExtraArgs;
+    private String coresPerNode;
 
     /*
      * The SparkCaller is used for managing the workflow
@@ -34,7 +35,7 @@ public class SparkCaller {
      *
      */
     public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments) {
+                       Properties toolsExtraArguments, String coresPerNode) {
 
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
@@ -42,6 +43,7 @@ public class SparkCaller {
         this.pathToReference = pathToReference;
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
+        this.coresPerNode = coresPerNode;
     }
 
     /* Performs the preprocessing stage of the GATK pipeline.
@@ -85,16 +87,19 @@ public class SparkCaller {
         this.log.info("Creating targets on which to perform BQSR...");
         JavaRDD<Tuple2<File, File>> bqsrTables = bamFilesRDD.map(new BQSRTargetGenerator(this.pathToReference,
                                                                                          this.knownSites,
-                                                                 this.toolsExtraArgs.getProperty("BaseRecalibrator")));
+                                                                 this.toolsExtraArgs.getProperty("BaseRecalibrator"),
+                                                                 this.coresPerNode));
 
         this.log.info("Performing BQSR...");
-        return bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads")));
+        return bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads"),
+                                       this.coresPerNode));
     }
 
     public JavaRDD<File> realignIndels(JavaRDD<File> bamFilesRDD) {
         this.log.info("Creating indel targets...");
         JavaRDD<Tuple2<File, File>> indelTargetsRDD = bamFilesRDD.map(new IndelTargetCreator(this.pathToReference,
-                                                            this.toolsExtraArgs.getProperty("RealignerTargetCreator")));
+                                                            this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
+                                                            this.coresPerNode));
 
         this.log.info("Realigning indels...");
         return indelTargetsRDD.map(new RealignIndels(this.pathToReference,
@@ -155,6 +160,10 @@ public class SparkCaller {
         configFile.setRequired(true);
         options.addOption(configFile);
 
+        Option threads = new Option("CPN", "CoresPerNode", true, "The number of available cores per node.");
+        threads.setRequired(true);
+        options.addOption(threads);
+
         return options;
     }
 
@@ -188,9 +197,11 @@ public class SparkCaller {
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
+        String coresPerNode = cmdArgs.getOptionValue("CoresPerNode");
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
 
-        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites, toolsExtraArguments);
+        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
+                                             toolsExtraArguments, coresPerNode);
         caller.runPipeline(pathToSAMFiles);
     }
 

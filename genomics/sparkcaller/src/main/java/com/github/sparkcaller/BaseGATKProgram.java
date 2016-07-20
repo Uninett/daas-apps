@@ -24,6 +24,12 @@ public class BaseGATKProgram implements Serializable {
         CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
     }
 
+    protected void setThreads(String availableCoresPerNode) {
+        // Most of the GATK tools works better by increasing the number of CPU threads allocated
+        // to each data thread, so this is what we set by default.
+        addArgument("-nct", availableCoresPerNode);
+    }
+
     protected void setInputFile(String inputFilepath) {
         addArgument("-I", inputFilepath);
     }
