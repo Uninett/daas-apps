@@ -17,4 +17,5 @@ tool.
 * It is preferred that HDFS is mounted using FUSE, as this makes it a lot
   easier to distribute the reference etc. to the nodes in the cluster.
 
-![GATK Workflow](img/Bioinformatics_workflow_v2.png "Workflow")
+![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
+using Spark")
