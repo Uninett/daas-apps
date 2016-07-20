@@ -9,7 +9,8 @@ a familiar interface, while (in most cases) improving the performance of each
 tool.
 
 ### Tools
-* **SparkBWA** is a short read aligner which uses BWA and Spark to
+* **SparkBWA** is a short read aligner which uses
+  [BWA](http://bio-bwa.sourceforge.net/) and Spark to
   perform alignment in a distributed manner.
 * **SparkCaller** is used both preprocesses the file obtained from
   SparkBWA and does variant discovery. It uses GATK toolkit to perform the
