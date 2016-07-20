@@ -89,7 +89,12 @@ public class Utils {
         List<File> vcfFilesByChromosome = new ArrayList<>();
 
         for (String chromosome: chromosomes) {
-            JavaRDD<String> chromosomeRDD = getRddByChromosome(vcfChromosomesRDD, chromosome).sortBy(line -> Long.parseLong(line.split("\t")[1]), true, 1);
+            JavaRDD<String> chromosomeRDD = getRddByChromosome(vcfChromosomesRDD, chromosome);
+
+            // Sort the variants by position.
+            chromosomeRDD = chromosomeRDD.sortBy(line -> Long.parseLong(line.split("\t")[1]), true, 1);
+
+            // Make sure that each file has a header.
             List<String> chromosomeVcfLines = vcfHeader.union(chromosomeRDD).collect();
 
             File chromosomeOutputFile = new File(Utils.removeExtenstion(pathToInputVcf, "vcf") + "-" + chromosome + ".vcf");
@@ -108,6 +113,8 @@ public class Utils {
     }
 
     public static JavaRDD<String> getRddByChromosome(JavaPairRDD<String, Iterable<String>> chromosomes, String chromosome) {
+        // Get the RDD which has the desired 'chromosome' as the key,
+        // then get all variants connected to this chromosome and return it as a single RDD.
         return chromosomes.filter(rddChromosome -> rddChromosome._1().equals(chromosome)).values().flatMap(line -> line);
     }
 
