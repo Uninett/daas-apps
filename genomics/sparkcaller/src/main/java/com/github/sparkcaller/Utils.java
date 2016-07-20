@@ -117,6 +117,6 @@ public class Utils {
         }
 
         String[] args = maybeString.split("\\s+");
-        return new ArrayList<String>(Arrays.asList(args));
+        return new ArrayList<>(Arrays.asList(args));
     }
 }
