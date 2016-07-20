@@ -1,11 +1,12 @@
 package com.github.sparkcaller;
 
+import org.apache.avro.generic.GenericData;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import picard.vcf.MergeVcfs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +75,40 @@ public class Utils {
         }
 
         return prop;
+    }
+
+    public static List<File> splitVcf(JavaSparkContext sparkContext, String pathToInputVcf) throws IOException {
+        JavaRDD<String> vcfFile = sparkContext.textFile(pathToInputVcf);
+        JavaRDD<String> vcfHeader = vcfFile.filter(line -> line.startsWith("#"));
+        JavaRDD<String> vcfLines = vcfFile.subtract(vcfHeader);
+
+
+        // Get the first word in the line, as this maps to the chromosome.
+        JavaPairRDD<String, Iterable<String>> vcfChromosomesRDD = vcfLines.groupBy(line -> line.split("\t", 0)[0]);
+        List<String> chromosomes = vcfChromosomesRDD.keys().distinct().collect();
+        List<File> vcfFilesByChromosome = new ArrayList<>();
+
+        for (String chromosome: chromosomes) {
+            JavaRDD<String> chromosomeRDD = getRddByChromosome(vcfChromosomesRDD, chromosome).sortBy(line -> Long.parseLong(line.split("\t")[1]), true, 1);
+            List<String> chromosomeVcfLines = vcfHeader.union(chromosomeRDD).collect();
+
+            File chromosomeOutputFile = new File(Utils.removeExtenstion(pathToInputVcf, "vcf") + "-" + chromosome + ".vcf");
+            FileWriter newVcfFile = new FileWriter(chromosomeOutputFile);
+
+            int vcfFileSize = chromosomeVcfLines.size();
+            for (int i = 0; i < vcfFileSize; i++) {
+                newVcfFile.write(chromosomeVcfLines.get(i) + "\n");
+            }
+
+            newVcfFile.close();
+            vcfFilesByChromosome.add(chromosomeOutputFile);
+        }
+
+        return vcfFilesByChromosome;
+    }
+
+    public static JavaRDD<String> getRddByChromosome(JavaPairRDD<String, Iterable<String>> chromosomes, String chromosome) {
+        return chromosomes.filter(rddChromosome -> rddChromosome._1().equals(chromosome)).values().flatMap(line -> line);
     }
 
     public static ArrayList<String> possibleStringToArgs(String maybeString) {
