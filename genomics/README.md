@@ -8,6 +8,13 @@ and then running the tools on each chunk. By doing so we are able to provide
 a familiar interface, while (in most cases) improving the performance of each
 tool.
 
+### Tools
+* **SparkBWA** is a short read aligner which uses BWA and Spark to
+  perform alignment in a distributed manner.
+* **SparkCaller** is used both preprocesses the file obtained from
+  SparkBWA and does variant discovery. It uses GATK toolkit to perform the
+  analysis.
+
 ### Requirements
 * Indexed FASTA reference files (as normally required in the GATK pipeline).
 * dbSNP files for the reference (the one for HG19 can be found
