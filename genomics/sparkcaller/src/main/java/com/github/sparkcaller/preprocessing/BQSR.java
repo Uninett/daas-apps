@@ -12,7 +12,6 @@ import java.io.File;
  * Writes a BAM file with recalibrated bases.
  *
  * See:
- *
  * https://www.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_readutils_PrintReads.php
  *
  * For more information.
