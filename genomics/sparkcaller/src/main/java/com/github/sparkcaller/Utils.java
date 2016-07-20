@@ -100,9 +100,8 @@ public class Utils {
             File chromosomeOutputFile = new File(Utils.removeExtenstion(pathToInputVcf, "vcf") + "-" + chromosome + ".vcf");
             FileWriter newVcfFile = new FileWriter(chromosomeOutputFile);
 
-            int vcfFileSize = chromosomeVcfLines.size();
-            for (int i = 0; i < vcfFileSize; i++) {
-                newVcfFile.write(chromosomeVcfLines.get(i) + "\n");
+            for (String line : chromosomeVcfLines) {
+                newVcfFile.write(line + "\n");
             }
 
             newVcfFile.close();
