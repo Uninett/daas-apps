@@ -26,7 +26,7 @@ public class VQSRRecalibrationApplier extends BaseGATKProgram {
         return Utils.removeExtenstion(vcfToRecalibrate, "vcf") + "-recalib-" + mode + ".vcf";
     }
 
-    public File applyRecalibration(File vcfToRecalibrate, Tuple2<File, File> recalibrationFiles, String mode) {
+    public File applyRecalibration(File vcfToRecalibrate, Tuple2<File, File> recalibrationFiles, String mode) throws Exception {
         File recalibrationFile = recalibrationFiles._1;
         File tranchesFile = recalibrationFiles._2;
 
@@ -38,6 +38,8 @@ public class VQSRRecalibrationApplier extends BaseGATKProgram {
 
         File recalibratedOutput = new File(constructRecalFilename(vcfToRecalibrate.getPath(), mode));
         setOutputFile(recalibratedOutput.getPath());
+
+        executeProgram();
         return recalibratedOutput;
     }
 }
