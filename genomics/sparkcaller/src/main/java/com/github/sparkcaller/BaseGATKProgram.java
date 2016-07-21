@@ -48,4 +48,17 @@ public class BaseGATKProgram implements Serializable {
             programArgs.add(value);
         }
     }
+
+    protected void changeArgument(String flag, String value) {
+        int flagIndex = programArgs.indexOf(flag);
+
+        // If the flag is not found, just add the argument.
+        if (flagIndex < 0) {
+            programArgs.add(flag);
+            programArgs.add(value);
+        } else {
+            programArgs.set(flagIndex+1, value);
+        }
+
+    }
 }
