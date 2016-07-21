@@ -27,7 +27,7 @@ java -jar sparkcaller-1.0.jar                    \
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
 ```
 
-### Configuration per tools
+### Configuration per tool
 It is possible to pass abitary arguments to each tool in the GATK toolkit.
 The input, reference, and output arguments are set automatically (KnownSites is
 also set in BQSR).
