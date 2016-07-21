@@ -8,9 +8,10 @@ import java.io.File;
 
 public class HaplotypeCaller extends BaseGATKProgram implements Function<File, File> {
 
-    public HaplotypeCaller(String pathToReference, String extraArgsString) {
+    public HaplotypeCaller(String pathToReference, String extraArgsString, String availableCoresPerNode) {
         super("HaplotypeCaller", extraArgsString);
         setReference(pathToReference);
+        setThreads(availableCoresPerNode);
     }
 
     public File call(File bamFile) throws Exception {

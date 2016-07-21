@@ -121,7 +121,8 @@ public class SparkCaller {
         this.log.info("Starting variant discovery!");
         this.log.info("Running HaplotypeCaller...");
         JavaRDD<File> variantsVCFFiles = preprocessedBAMFiles.map(new HaplotypeCaller(this.pathToReference,
-                                                                  this.toolsExtraArgs.getProperty("HaplotypeCaller")));
+                                                                  this.toolsExtraArgs.getProperty("HaplotypeCaller"),
+                                                                  this.coresPerNode));
         List<File> variantsFiles = variantsVCFFiles.collect();
         GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
                                                      this.toolsExtraArgs.getProperty("GenotypeGVCFs"));
