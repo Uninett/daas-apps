@@ -51,3 +51,6 @@ SNPVariantRecalibrator = -resource:hapmap,known=false,training=true,truth=true,p
 In order to run both INDEL and SNP recalibrator, add a similar line to what is
 added for SNPVariantRecalibrator (except that INDELVariantRecalibrator is used
 as the key).
+
+See [this](https://software.broadinstitute.org/gatk/guide/article?id=1259) to
+see which arguments are recommended when running the VariantRecalibrator.
