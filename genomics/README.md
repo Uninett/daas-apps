@@ -13,7 +13,8 @@ tool.
   [BWA](http://bio-bwa.sourceforge.net/) and Spark to
   perform alignment in a distributed manner.
 * **SparkCaller** is used both preprocesses the file obtained from
-  SparkBWA and does variant discovery. It uses GATK toolkit to perform the
+  SparkBWA and does variant discovery. It uses the [GATK
+  toolkit](https://www.google.no/search?q=GATK+bqsr&oq=GATK&aqs=chrome.0.69i59j69i57j69i60l4.431j0j1&sourceid=chrome&ie=UTF-8#safe=off&q=GATK+) to perform the
   analysis.
 
 ### Requirements
