@@ -1,7 +1,10 @@
 package com.github.sparkcaller;
 
 import com.github.sparkcaller.preprocessing.*;
+import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
+import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
+import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -114,13 +117,61 @@ public class SparkCaller {
      * @param preprocessedBAMFiles   a spark RDD containing the File object for each preprocessed BAM file.
      *
     */
-    public JavaRDD<File> discoverVariants(JavaRDD<File> preprocessedBAMFiles) {
+    public File discoverVariants(JavaRDD<File> preprocessedBAMFiles) {
         this.log.info("Starting variant discovery!");
         this.log.info("Running HaplotypeCaller...");
         JavaRDD<File> variantsVCFFiles = preprocessedBAMFiles.map(new HaplotypeCaller(this.pathToReference,
                                                                   this.toolsExtraArgs.getProperty("HaplotypeCaller")));
+        List<File> variantsFiles = variantsVCFFiles.collect();
+        GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
+                                                     this.toolsExtraArgs.getProperty("GenotypeGVCFs"));
+        try {
+            File outputFile = new File(this.outputFolder, "merged.vcf");
+            File mergedVariants = genotypeGVCF.performJointGenotyping(variantsFiles, outputFile.getPath());
+            File recalibratedVariants = recalibrateVariants(mergedVariants);
 
-        return variantsVCFFiles;
+            Utils.moveToDir(recalibratedVariants, outputFile.getPath());
+
+            return recalibratedVariants;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+
+    private Tuple2<File, File> performVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
+        VQSRTargetCreator targetCreator = new VQSRTargetCreator(this.pathToReference, extraArgs, this.coresPerNode);
+        return targetCreator.createTargets(vcfToRecalibrate, mode);
+
+    }
+
+    private File recalibrateVariants(File vcfToRecalibrate) {
+        String INDELextraArgs = this.toolsExtraArgs.getProperty("INDELVariantRecalibrator");
+        String SNPextraArgs = this.toolsExtraArgs.getProperty("SNPVariantRecalibrator");
+
+        try {
+            VQSRRecalibrationApplier vqsrApplier = new VQSRRecalibrationApplier(this.pathToReference,
+                    this.toolsExtraArgs.getProperty("ApplyRecalibration"),
+                    this.coresPerNode);
+
+            if (SNPextraArgs != null) {
+                Tuple2<File, File> snpTargets = performVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
+                vcfToRecalibrate = vqsrApplier.applyRecalibration(vcfToRecalibrate, snpTargets, "SNP");
+            }
+
+            if (INDELextraArgs != null) {
+                Tuple2<File, File> indelTargets = performVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
+                vcfToRecalibrate = vqsrApplier.applyRecalibration(vcfToRecalibrate, indelTargets, "INDEL");
+            }
+
+            return vcfToRecalibrate;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+
+            return null;
+        }
     }
 
     /*
