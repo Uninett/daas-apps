@@ -130,8 +130,6 @@ public class SparkCaller {
             File mergedVariants = genotypeGVCF.performJointGenotyping(variantsFiles, outputFile.getPath());
             File recalibratedVariants = recalibrateVariants(mergedVariants);
 
-            Utils.moveToDir(recalibratedVariants, outputFile.getPath());
-
             return recalibratedVariants;
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,14 +178,14 @@ public class SparkCaller {
      * @param pathToSAMFiles   the path to the folder containing the SAM files created by the aligner.
      *
      */
-    public List<File> runPipeline(String pathToSAMFiles) {
+    public File runPipeline(String pathToSAMFiles) {
 
         JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
 
         if (preprocessedBAMFiles != null) {
-            JavaRDD<File> variantsVCFFiles = discoverVariants(preprocessedBAMFiles);
-            List<File> outputFiles = variantsVCFFiles.collect();
-            return outputFiles;
+            File vcfVariants = discoverVariants(preprocessedBAMFiles);
+            Utils.moveToDir(vcfVariants, this.outputFolder);
+            return vcfVariants;
         } else {
             System.err.println("Could not preprocess SAM files!");
             return null;
