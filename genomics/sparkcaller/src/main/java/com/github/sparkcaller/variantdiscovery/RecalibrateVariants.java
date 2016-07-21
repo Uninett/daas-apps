@@ -3,18 +3,24 @@ package com.github.sparkcaller.variantdiscovery;
 import com.github.sparkcaller.BaseGATKProgram;
 import com.github.sparkcaller.Utils;
 
+import java.io.File;
+
 public class RecalibrateVariants extends BaseGATKProgram {
 
-    public RecalibrateVariants(String pathToReference, String extraArgs) {
+    public RecalibrateVariants(String pathToReference, String extraArgs, String coresPerNode) {
         super("VariantRecalibrator", extraArgs);
         setReference(pathToReference);
+        addArgument("-nt", coresPerNode);
     }
 
-    public void recalibrateVariants(String pathToVcf) throws Exception {
-        addArgument("-input", pathToVcf);
-        addArgument("-recalFile", Utils.removeExtenstion(pathToVcf, "vcf") + "-recal.recal");
-        addArgument("-tranchesFile", Utils.removeExtenstion(pathToVcf, "vcf") + "-tranches.tranches");
+    public File performRecalibration(File vcfInput) throws Exception {
+        addArgument("-input", vcfInput.getPath());
+
+        File recalOutput = new File(Utils.removeExtenstion(vcfInput.getPath(), "vcf") + "-recal.recal");
+        addArgument("-recalFile", recalOutput.getPath());
+        addArgument("-tranchesFile", Utils.removeExtenstion(vcfInput.getPath(), "vcf") + "-tranches.tranches");
 
         executeProgram();
-   }
+        return recalOutput;
+    }
 }
