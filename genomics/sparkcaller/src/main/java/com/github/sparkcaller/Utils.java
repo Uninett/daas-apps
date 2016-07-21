@@ -1,14 +1,8 @@
 package com.github.sparkcaller;
 
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import picard.vcf.MergeVcfs;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 public class Utils {
@@ -38,21 +32,6 @@ public class Utils {
         return filepath.substring(0, filepath.length() - (ext.length()+1));
     }
 
-    /*
-    Merges all the VCF files specified in the list 'vcfFiles' and returns the filename of the output file.
-    */
-    public static String mergeVCFFiles(List<File> vcfFiles, String outputFileName) {
-        MergeVcfs mergeEngine = new MergeVcfs();
-        mergeEngine.INPUT = vcfFiles;
-
-        // Only pass the output file as an argument,
-        // as it is more efficient to set the input files directly in the object.
-        String outputArgs[] = {"O=" + outputFileName};
-
-        mergeEngine.instanceMain(outputArgs);
-        return outputFileName;
-    }
-
     public static Properties loadConfigFile(String configFilepath) {
         Properties prop = new Properties();
         InputStream input = null;
@@ -73,46 +52,6 @@ public class Utils {
         }
 
         return prop;
-    }
-
-    public static List<File> splitVcf(JavaSparkContext sparkContext, String pathToInputVcf) throws IOException {
-        JavaRDD<String> vcfFile = sparkContext.textFile(pathToInputVcf);
-        JavaRDD<String> vcfHeader = vcfFile.filter(line -> line.startsWith("#"));
-        JavaRDD<String> vcfLines = vcfFile.subtract(vcfHeader);
-
-
-        // Get the first word in the line, as this maps to the chromosome.
-        JavaPairRDD<String, Iterable<String>> vcfChromosomesRDD = vcfLines.groupBy(line -> line.split("\t", 0)[0]);
-        List<String> chromosomes = vcfChromosomesRDD.keys().distinct().collect();
-        List<File> vcfFilesByChromosome = new ArrayList<>();
-
-        for (String chromosome: chromosomes) {
-            JavaRDD<String> chromosomeRDD = getRddByChromosome(vcfChromosomesRDD, chromosome);
-
-            // Sort the variants by position.
-            chromosomeRDD = chromosomeRDD.sortBy(line -> Long.parseLong(line.split("\t")[1]), true, 1);
-
-            // Make sure that each file has a header.
-            List<String> chromosomeVcfLines = vcfHeader.union(chromosomeRDD).collect();
-
-            File chromosomeOutputFile = new File(Utils.removeExtenstion(pathToInputVcf, "vcf") + "-" + chromosome + ".vcf");
-            FileWriter newVcfFile = new FileWriter(chromosomeOutputFile);
-
-            for (String line : chromosomeVcfLines) {
-                newVcfFile.write(line + "\n");
-            }
-
-            newVcfFile.close();
-            vcfFilesByChromosome.add(chromosomeOutputFile);
-        }
-
-        return vcfFilesByChromosome;
-    }
-
-    public static JavaRDD<String> getRddByChromosome(JavaPairRDD<String, Iterable<String>> chromosomes, String chromosome) {
-        // Get the RDD which has the desired 'chromosome' as the key,
-        // then get all variants connected to this chromosome and return it as a single RDD.
-        return chromosomes.filter(rddChromosome -> rddChromosome._1().equals(chromosome)).values().flatMap(line -> line);
     }
 
     public static File moveToDir(File fileToCopy, String targetPath) {
