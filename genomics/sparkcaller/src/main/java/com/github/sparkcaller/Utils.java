@@ -1,13 +1,11 @@
 package com.github.sparkcaller;
 
-import org.apache.avro.generic.GenericData;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import picard.vcf.MergeVcfs;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -115,6 +113,13 @@ public class Utils {
         // Get the RDD which has the desired 'chromosome' as the key,
         // then get all variants connected to this chromosome and return it as a single RDD.
         return chromosomes.filter(rddChromosome -> rddChromosome._1().equals(chromosome)).values().flatMap(line -> line);
+    }
+
+    public static File moveToDir(File fileToCopy, String targetPath) {
+        File outputFile = new File(targetPath, fileToCopy.getName());
+        fileToCopy.renameTo(outputFile);
+
+        return outputFile;
     }
 
     public static ArrayList<String> possibleStringToArgs(String maybeString) {
