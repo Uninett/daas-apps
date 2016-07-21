@@ -6,6 +6,14 @@ import scala.Tuple2;
 
 import java.io.File;
 
+/*
+ * Builds the targets used to filter variants based on variant quality.
+ *
+ * See:
+ * https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantrecalibration_VariantRecalibrator.php
+ *
+ * For more documentation.
+ */
 public class VQSRTargetCreator extends BaseGATKProgram {
 
     public VQSRTargetCreator(String pathToReference, String extraArgs, String coresPerNode) {
