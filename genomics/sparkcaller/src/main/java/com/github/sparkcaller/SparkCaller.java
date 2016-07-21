@@ -22,6 +22,7 @@ public class SparkCaller {
     private String knownSites;
     private Properties toolsExtraArgs;
     private String coresPerNode;
+    private String outputFolder;
 
     /*
      * The SparkCaller is used for managing the workflow
@@ -35,7 +36,7 @@ public class SparkCaller {
      *
      */
     public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode) {
+                       Properties toolsExtraArguments, String coresPerNode, String outputFolder) {
 
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
@@ -44,6 +45,7 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
+        this.outputFolder = outputFolder;
     }
 
     /* Performs the preprocessing stage of the GATK pipeline.
@@ -152,6 +154,10 @@ public class SparkCaller {
         inputFolder.setRequired(true);
         options.addOption(inputFolder);
 
+        Option outputFolder = new Option("O", "OutputFolder", true, "The path to the folder which will store the final output files.");
+        outputFolder.setRequired(true);
+        options.addOption(outputFolder);
+
         Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
         knownSites.setRequired(true);
         options.addOption(knownSites);
@@ -195,13 +201,14 @@ public class SparkCaller {
 
         String pathToReference = cmdArgs.getOptionValue("Reference");
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
+        String outputDirectory = cmdArgs.getOptionValue("OutputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         String coresPerNode = cmdArgs.getOptionValue("CoresPerNode");
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
-                                             toolsExtraArguments, coresPerNode);
+                                             toolsExtraArguments, coresPerNode, outputDirectory);
         caller.runPipeline(pathToSAMFiles);
     }
 
