@@ -125,7 +125,8 @@ public class SparkCaller {
                                                                   this.coresPerNode));
         List<File> variantsFiles = variantsVCFFiles.collect();
         GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
-                                                     this.toolsExtraArgs.getProperty("GenotypeGVCFs"));
+                                                     this.toolsExtraArgs.getProperty("GenotypeGVCFs"),
+                                                     this.coresPerNode);
         try {
             File outputFile = new File(this.outputFolder, "merged.vcf");
             File mergedVariants = genotypeGVCF.performJointGenotyping(variantsFiles, outputFile.getPath());
