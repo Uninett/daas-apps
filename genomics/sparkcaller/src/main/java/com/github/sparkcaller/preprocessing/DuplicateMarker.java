@@ -10,14 +10,14 @@ import java.util.ArrayList;
 /*
  * Marks all the duplicate reads found in the input BAM file.
  */
-public class DuplicateMarker implements Function<File, File> {
+public class DuplicateMarker {
     final private ArrayList<String> extraArgs;
 
     public DuplicateMarker(String extraArgsString) {
         this.extraArgs = Utils.possibleStringToArgs(extraArgsString);
     }
 
-    public File call(File file) throws Exception {
+    public File markDuplicates(File file) throws Exception {
         MarkDuplicates markDuplicates = new MarkDuplicates();
 
         ArrayList<String> markerArgs = new ArrayList<String>();
