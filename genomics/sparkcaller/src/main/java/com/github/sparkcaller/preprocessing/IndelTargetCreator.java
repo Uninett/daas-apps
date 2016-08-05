@@ -17,14 +17,14 @@ import java.util.ArrayList;
  * For more information.
  *
  */
-public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
+public class IndelTargetCreator extends BaseGATKProgram {
     public IndelTargetCreator(String pathToReference, String extraArgsString, String coresPerNode) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
         addArgument("-nt", coresPerNode); // The target creator is better optimized for multiple data threads.
     }
 
-    public Tuple2<File, File> call(File file) throws Exception {
+    public File createTargets(File file) throws Exception {
         setInputFile(file.getPath());
 
         final String outputIntervalsFilename = Utils.removeExtenstion(file.getPath(), "bam") + "-target.intervals";
@@ -32,6 +32,6 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
         setOutputFile(outputIntervalsFile.getPath());
 
         executeProgram();
-        return new Tuple2<File, File>(file, outputIntervalsFile);
+        return outputIntervalsFile;
    }
 }
