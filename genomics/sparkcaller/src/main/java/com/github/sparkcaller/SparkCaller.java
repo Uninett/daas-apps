@@ -111,15 +111,28 @@ public class SparkCaller {
                                        this.coresPerNode));
     }
 
-    public JavaRDD<File> realignIndels(JavaRDD<File> bamFilesRDD) {
+    public JavaRDD<File> realignIndels(File bamFile) throws Exception {
         this.log.info("Creating indel targets...");
-        JavaRDD<Tuple2<File, File>> indelTargetsRDD = bamFilesRDD.map(new IndelTargetCreator(this.pathToReference,
-                                                            this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
-                                                            this.coresPerNode));
 
+        // The creation of indel targets most be performed sequentially
+        IndelTargetCreator targetCreator = new IndelTargetCreator(this.pathToReference,
+                                                                  this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
+                                                                  this.coresPerNode);
+
+        BamIndexer.indexBam(bamFile);
+        File indelTargets = targetCreator.createTargets(bamFile);
         this.log.info("Realigning indels...");
-        return indelTargetsRDD.map(new RealignIndels(this.pathToReference,
-                                                            this.toolsExtraArgs.getProperty("IndelRealigner")));
+
+
+        List<File> splittedBAM = SAMFileUtils.splitBAMFile(bamFile, this.sparkContext.defaultParallelism());
+        JavaRDD<File> splittedBAMRDD = this.sparkContext.parallelize(splittedBAM);
+
+        splittedBAMRDD = splittedBAMRDD.map(new BamIndexer());
+        splittedBAMRDD = splittedBAMRDD.map(new RealignIndels(this.pathToReference,
+                                             indelTargets,
+                                             this.toolsExtraArgs.getProperty("IndelRealigner")));
+
+        return splittedBAMRDD;
     }
 
     /* Performs the variant discovery stage of the GATK pipeline.
