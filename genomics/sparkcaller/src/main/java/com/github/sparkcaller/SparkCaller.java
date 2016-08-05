@@ -51,6 +51,17 @@ public class SparkCaller {
         this.outputFolder = outputFolder;
     }
 
+    public JavaRDD<File> convertToSortedBam(JavaRDD<File> files) {
+        this.log.info("Converting the SAM files to sorted BAM files...");
+        return files.map(new SamToSortedBam());
+    }
+
+    public File markDuplicates(File bamFile) throws Exception {
+        this.log.info("Marking duplicates...");
+        DuplicateMarker duplicateMarker = new DuplicateMarker(this.toolsExtraArgs.getProperty("MarkDuplicates"));
+        return duplicateMarker.markDuplicates(bamFile);
+    }
+
     /* Performs the preprocessing stage of the GATK pipeline.
      * This is performed in a simple scatter-gather manner.
      * See the following link for details: https://www.broadinstitute.org/gatk/guide/bp_step.php?p=1
