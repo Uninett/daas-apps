@@ -215,7 +215,12 @@ public class SparkCaller {
      */
     public File runPipeline(String pathToSAMFiles) {
 
-        JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
+        try {
+            JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
+            preprocessedBAMFiles.collect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (preprocessedBAMFiles != null) {
             File vcfVariants = discoverVariants(preprocessedBAMFiles);
