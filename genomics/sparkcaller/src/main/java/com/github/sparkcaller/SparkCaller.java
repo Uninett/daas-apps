@@ -126,25 +126,19 @@ public class SparkCaller {
     public JavaRDD<File> realignIndels(File bamFile) throws Exception {
         this.log.info("Creating indel targets...");
 
-        // The creation of indel targets most be performed sequentially
-        IndelTargetCreator targetCreator = new IndelTargetCreator(this.pathToReference,
-                                                                  this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
-                                                                  this.coresPerNode);
+        List<File> bamsByContig = SAMFileUtils.splitBAMByChromosome(bamFile);
+        JavaRDD<File> bamsByContigRDD = this.sparkContext.parallelize(bamsByContig);
 
-        BamIndexer.indexBam(bamFile);
-        File indelTargets = targetCreator.createTargets(bamFile);
+        bamsByContigRDD = bamsByContigRDD.map(new BamIndexer());
+        JavaRDD<Tuple2<File, File>> bamTargets = bamsByContigRDD.map(new IndelTargetCreator(this.pathToReference,
+                                                                     this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
+                                                                     this.coresPerNode));
+
         this.log.info("Realigning indels...");
+        JavaRDD<File> realignedIndels = bamTargets.map(new RealignIndels(this.pathToReference,
+                                                       this.toolsExtraArgs.getProperty("IndelRealigner")));
 
-
-        List<File> splittedBAM = SAMFileUtils.splitBAMFile(bamFile, this.sparkContext.defaultParallelism());
-        JavaRDD<File> splittedBAMRDD = this.sparkContext.parallelize(splittedBAM);
-
-        splittedBAMRDD = splittedBAMRDD.map(new BamIndexer());
-        splittedBAMRDD = splittedBAMRDD.map(new RealignIndels(this.pathToReference,
-                                             indelTargets,
-                                             this.toolsExtraArgs.getProperty("IndelRealigner")));
-
-        return splittedBAMRDD;
+        return realignedIndels;
     }
 
     /* Performs the variant discovery stage of the GATK pipeline.
