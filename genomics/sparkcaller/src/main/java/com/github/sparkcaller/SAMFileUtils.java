@@ -7,6 +7,7 @@ import scala.Tuple2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SAMFileUtils {
@@ -85,6 +86,51 @@ public class SAMFileUtils {
         currSplitSAMWriter.close();
         samIterator.close();
         samFile.close();
+
+        return outputFiles;
+    }
+
+    public static List<File> splitBAMByChromosome(File bamFile) throws IOException {
+        SamReader samFile = SamReaderFactory.makeDefault().open(bamFile);
+        SAMFileHeader samFileHeader = samFile.getFileHeader();
+        HashMap<String, SAMFileWriter> contigMapper = new HashMap<>();
+        SAMFileWriterFactory samWriterFactory =  new SAMFileWriterFactory();
+
+        SAMRecordIterator samIterator = samFile.iterator();
+        String prevContig = "NONE";
+        SAMFileWriter currWriter = null;
+
+        List<File> outputFiles = new ArrayList<>();
+        while(samIterator.hasNext()) {
+            SAMRecord record = samIterator.next();
+            String currContig = record.getContig();
+
+            if (currContig == null) {
+                currContig = "unmapped";
+            }
+
+            // When the input is sorted, do not perform a loop up for every record.
+            if (!prevContig.equals(currContig)) {
+                currWriter = contigMapper.get(currContig);
+            }
+
+            // Create a new writer if a new contig was found.
+            if (currWriter == null) {
+                String newSAMFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-" + currContig + ".bam";
+                File newSAMFile = new File(newSAMFilename);
+                SAMFileWriter newWriter = samWriterFactory.makeSAMOrBAMWriter(samFileHeader, true, newSAMFile);
+                newWriter.addAlignment(record);
+                contigMapper.put(currContig, newWriter);
+
+                currWriter = newWriter;
+                outputFiles.add(newSAMFile);
+            } else {
+                currWriter.addAlignment(record);
+            }
+
+            prevContig = currContig;
+        }
+        contigMapper.values().forEach(SAMFileWriter::close);
 
         return outputFiles;
     }
