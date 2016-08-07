@@ -2,8 +2,6 @@ package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.BaseGATKProgram;
 import com.github.sparkcaller.Utils;
-import org.apache.spark.api.java.function.Function;
-import scala.Tuple2;
 
 import java.io.File;
 
@@ -16,7 +14,7 @@ import java.io.File;
  * For more information.
  *
  */
-public class BQSRTargetGenerator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
+public class BQSRTargetGenerator extends BaseGATKProgram {
 
     public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs, String coresPerNode) {
         super("BaseRecalibrator", extraArgs);
@@ -25,7 +23,7 @@ public class BQSRTargetGenerator extends BaseGATKProgram implements Function<Fil
         setThreads(coresPerNode);
     }
 
-    public Tuple2<File, File> call(File file) throws Exception {
+    public File generateTargets(File file) throws Exception {
         setInputFile(file.getPath());
         String outputTableFilename = Utils.removeExtenstion(file.getPath(), "bam") + "-recal_data.table";
         File outputTable = new File(outputTableFilename);
@@ -33,6 +31,6 @@ public class BQSRTargetGenerator extends BaseGATKProgram implements Function<Fil
         setOutputFile(outputTable.getPath());
 
         executeProgram();
-        return new Tuple2<File, File>(file, outputTable);
+        return outputTable;
     }
 }
