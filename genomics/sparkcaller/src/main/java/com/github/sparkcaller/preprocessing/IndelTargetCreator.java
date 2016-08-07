@@ -6,7 +6,6 @@ import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /*
  * Minimize the amount of mismatching bases across all reads.
@@ -17,21 +16,26 @@ import java.util.ArrayList;
  * For more information.
  *
  */
-public class IndelTargetCreator extends BaseGATKProgram {
+public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
     public IndelTargetCreator(String pathToReference, String extraArgsString, String coresPerNode) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
         addArgument("-nt", coresPerNode); // The target creator is better optimized for multiple data threads.
     }
 
-    public File createTargets(File file) throws Exception {
-        setInputFile(file.getPath());
+    @Override
+    public Tuple2<File, File> call(File bamFile) throws Exception {
+        setInputFile(bamFile.getPath());
 
-        final String outputIntervalsFilename = Utils.removeExtenstion(file.getPath(), "bam") + "-target.intervals";
+        final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
         setOutputFile(outputIntervalsFile.getPath());
 
-        executeProgram();
-        return outputIntervalsFile;
-   }
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
+        return new Tuple2<>(bamFile, outputIntervalsFile);
+    }
 }
