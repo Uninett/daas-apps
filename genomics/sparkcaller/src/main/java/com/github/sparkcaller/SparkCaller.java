@@ -101,16 +101,26 @@ public class SparkCaller {
 
     }
 
-    public JavaRDD<File> performBQSR(JavaRDD<File> bamFilesRDD) {
+    public JavaRDD<File> performBQSR(List<File> bamFiles) throws Exception {
         this.log.info("Creating targets on which to perform BQSR...");
-        JavaRDD<Tuple2<File, File>> bqsrTables = bamFilesRDD.map(new BQSRTargetGenerator(this.pathToReference,
-                                                                                         this.knownSites,
-                                                                 this.toolsExtraArgs.getProperty("BaseRecalibrator"),
-                                                                 this.coresPerNode));
+        File BAMFilesMerged = SAMFileUtils.mergeBAMFiles(bamFiles, "merged.bam");
+
+        BamIndexer.indexBam(BAMFilesMerged);
+        BQSRTargetGenerator bqsrTargetGenerator= new BQSRTargetGenerator(this.pathToReference,
+                                                                         this.knownSites,
+                                                                         this.toolsExtraArgs.getProperty("BaseRecalibrator"),
+                                                                         this.coresPerNode);
+        File bqsrTargets = bqsrTargetGenerator.generateTargets(BAMFilesMerged);
+
+        List<File> bamFilesByChromosome = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged);
+        JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFilesByChromosome);
+        bamFilesRDD = bamFilesRDD.map(new BamIndexer());
 
         this.log.info("Performing BQSR...");
-        return bqsrTables.map(new BQSR(this.pathToReference, this.toolsExtraArgs.getProperty("PrintReads"),
-                                       this.coresPerNode));
+        return bamFilesRDD.map(new BQSR(this.pathToReference,
+                                        bqsrTargets.getPath(),
+                                        this.toolsExtraArgs.getProperty("PrintReads"),
+                                        this.coresPerNode));
     }
 
     public JavaRDD<File> realignIndels(File bamFile) throws Exception {
