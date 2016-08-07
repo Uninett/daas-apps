@@ -89,14 +89,12 @@ public class SparkCaller {
 
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
 
-            // Create an index, since this is required by the indel realigner
-            this.log.info("Creating BAM indexes...");
-            bamFilesRDD = bamFilesRDD.map(new BamIndexer());
-            bamFilesRDD = realignIndels(bamFilesRDD);
-            bamFilesRDD = performBQSR(bamFilesRDD);
+            JavaRDD<File> realignedBamFilesRDD = realignIndels(dedupedBAMFile);
+            List<File> realignedBAMFiles = realignedBamFilesRDD.collect();
+            JavaRDD<File> recalibratedBamFilesRDD = performBQSR(realignedBAMFiles);
 
             this.log.info("Preprocessing finished!");
-            return bamFilesRDD;
+            return recalibratedBamFilesRDD;
         }
 
         return null;
