@@ -3,10 +3,11 @@ package com.github.sparkcaller.variantdiscovery;
 import com.github.sparkcaller.BaseGATKProgram;
 import com.github.sparkcaller.Utils;
 import org.apache.spark.api.java.function.Function;
+import scala.Tuple2;
 
 import java.io.File;
 
-public class HaplotypeCaller extends BaseGATKProgram implements Function<File, File> {
+public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<String, File>, File> {
 
     public HaplotypeCaller(String pathToReference, String extraArgsString, String availableCoresPerNode) {
         super("HaplotypeCaller", extraArgsString);
@@ -14,12 +15,20 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<File, F
         setThreads(availableCoresPerNode);
     }
 
-    public File call(File bamFile) throws Exception {
-        String outputFilename = Utils.removeExtenstion(bamFile.getPath(), "bam")  + ".vcf";
-        setInputFile(bamFile.getAbsolutePath());
+    public File call(Tuple2<String, File> contigTuple) throws Exception {
+        String contig = contigTuple._1;
+        File inputBam = contigTuple._2;
+
+        String outputFilename = Utils.removeExtenstion(inputBam.getPath(), "bam")  + ".vcf";
+        addArgument("-L", contig);
+        setInputFile(inputBam.getAbsolutePath());
         setOutputFile(outputFilename);
 
-        executeProgram();
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
         return new File(outputFilename);
     }
 }
