@@ -90,7 +90,7 @@ public class SAMFileUtils {
         return outputFiles;
     }
 
-    public static List<File> splitBAMByChromosome(File bamFile) throws IOException {
+    public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile) throws IOException {
         SamReader samFile = SamReaderFactory.makeDefault().open(bamFile);
         SAMFileHeader samFileHeader = samFile.getFileHeader();
         HashMap<String, SAMFileWriter> contigMapper = new HashMap<>();
@@ -100,7 +100,7 @@ public class SAMFileUtils {
         String prevContig = "NONE";
         SAMFileWriter currWriter = null;
 
-        List<File> outputFiles = new ArrayList<>();
+        List<Tuple2<String, File>> outputFiles = new ArrayList<>();
         while(samIterator.hasNext()) {
             SAMRecord record = samIterator.next();
             String currContig = record.getContig();
@@ -123,7 +123,7 @@ public class SAMFileUtils {
                 contigMapper.put(currContig, newWriter);
 
                 currWriter = newWriter;
-                outputFiles.add(newSAMFile);
+                outputFiles.add(new Tuple2<>(currContig, newSAMFile));
             } else {
                 currWriter.addAlignment(record);
             }
