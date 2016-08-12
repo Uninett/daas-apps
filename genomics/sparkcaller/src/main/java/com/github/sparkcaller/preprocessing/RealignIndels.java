@@ -22,19 +22,15 @@ public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<Fi
     public RealignIndels(String pathToReference, String extraArgs) {
         super("IndelRealigner", extraArgs);
         setReference(pathToReference);
+        changeArgument("-targetIntervals", indelTargets.getPath());
 }
 
-    public File call(Tuple2<File, File> targetTuple) throws Exception {
-        File inputBam  = targetTuple._1;
-        File indelTargets  = targetTuple._2;
-        addArgument("-targetIntervals", indelTargets.getPath());
-
-        setInputFile(inputBam.getPath());
+        changeArgument("-I", inputBam.getPath());
 
         final String newFileName = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
 
         File outputBamFile = new File(newFileName);
-        setOutputFile(outputBamFile.getPath());
+        changeArgument("-o", outputBamFile.getPath());
 
         executeProgram();
         return outputBamFile;

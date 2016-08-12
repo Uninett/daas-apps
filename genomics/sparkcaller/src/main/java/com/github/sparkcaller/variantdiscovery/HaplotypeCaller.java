@@ -20,9 +20,9 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<
         File inputBam = contigTuple._2;
 
         String outputFilename = Utils.removeExtenstion(inputBam.getPath(), "bam")  + ".vcf";
-        addArgument("-L", contig);
-        setInputFile(inputBam.getAbsolutePath());
-        setOutputFile(outputFilename);
+        changeArgument("-L", contig);
+        changeArgument("-I", inputBam.getAbsolutePath());
+        changeArgument("-o", outputFilename);
 
         try {
             executeProgram();

@@ -20,16 +20,30 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
     public IndelTargetCreator(String pathToReference, String extraArgsString, String coresPerNode) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
-        addArgument("-nt", coresPerNode); // The target creator is better optimized for multiple data threads.
+    }
+
+    public File createTargets(File bamFile) throws Exception {
+        changeArgument("-I", bamFile.getPath());
+
+        final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
+        File outputIntervalsFile = new File(outputIntervalsFilename);
+        changeArgument("-o", outputIntervalsFile.getPath());
+
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
+        return outputIntervalsFile;
     }
 
     @Override
     public Tuple2<File, File> call(File bamFile) throws Exception {
-        setInputFile(bamFile.getPath());
+        changeArgument("-I", bamFile.getPath());
 
         final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
-        setOutputFile(outputIntervalsFile.getPath());
+        changeArgument("-o", outputIntervalsFile.getPath());
 
         try {
             executeProgram();
