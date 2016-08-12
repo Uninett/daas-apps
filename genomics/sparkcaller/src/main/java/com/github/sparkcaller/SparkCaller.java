@@ -237,18 +237,18 @@ public class SparkCaller {
     public File runPipeline(String pathToSAMFiles) {
 
         try {
-            JavaRDD<File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
-            preprocessedBAMFiles.collect();
+            JavaPairRDD<String, File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
+            if (preprocessedBAMFiles != null) {
+                File vcfVariants = discoverVariants(preprocessedBAMFiles);
+                Utils.moveToDir(vcfVariants, this.outputFolder);
+
+                return vcfVariants;
+            } else {
+                System.err.println("Could not preprocess SAM files!");
+                return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        if (preprocessedBAMFiles != null) {
-            File vcfVariants = discoverVariants(preprocessedBAMFiles);
-            Utils.moveToDir(vcfVariants, this.outputFolder);
-            return vcfVariants;
-        } else {
-            System.err.println("Could not preprocess SAM files!");
             return null;
         }
     }
