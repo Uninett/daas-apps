@@ -118,8 +118,14 @@ public class SparkCaller {
         bqsrTargets = Utils.moveToDir(bqsrTargets, this.outputFolder);
 
         List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged);
-        JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(bamFilesByChromosomeTuple);
-        bamFilesRDD = bamFilesRDD.mapValues(new BamIndexer());
+        List<Tuple2<String, File>> movedBAMFilesByChromosome = new ArrayList<Tuple2<String, File>>();
+        for (Tuple2<String, File> bamTuple : bamFilesByChromosomeTuple) {
+            File newFile = Utils.moveToDir(bamTuple._2, this.outputFolder);
+            movedBAMFilesByChromosome.add(new Tuple2<>(bamTuple._1, newFile));
+        }
+
+        JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(movedBAMFilesByChromosome);
+        bamFilesRDD.mapValues(new BamIndexer()).collect();
 
         this.log.info("Performing BQSR...");
         return bamFilesRDD.mapValues(new BQSR(this.pathToReference,
