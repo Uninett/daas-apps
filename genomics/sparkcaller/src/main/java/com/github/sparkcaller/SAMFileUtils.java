@@ -57,7 +57,7 @@ public class SAMFileUtils {
 
             // Create a new writer if a new contig was found.
             if (currWriter == null) {
-                String newSAMFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-" + currContig + ".bam";
+                String newSAMFilename = Utils.removeExtenstion(bamFile.getName(), "bam") + "-" + currContig + ".bam";
                 File newSAMFile = new File(newSAMFilename);
                 SAMFileWriter newWriter = samWriterFactory.makeSAMOrBAMWriter(samFileHeader, true, newSAMFile);
                 newWriter.addAlignment(record);
