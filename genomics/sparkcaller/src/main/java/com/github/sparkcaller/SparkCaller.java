@@ -136,17 +136,17 @@ public class SparkCaller {
 
     public JavaPairRDD<String, File> realignIndels(File bamFile) throws Exception {
         this.log.info("Creating indel targets...");
+        BamIndexer.indexBam(bamFile);
+        IndelTargetCreator indelTargetCreator = new IndelTargetCreator(this.pathToReference,
+                                                                     this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
+                                                                     this.coresPerNode);
+        File indelTargets = indelTargetCreator.createTargets(bamFile);
+        indelTargets = Utils.moveToDir(indelTargets, this.outputFolder);
 
         List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(bamFile);
-        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName);
-
-        bamsByContigRDD = bamsByContigRDD.mapValues(new BamIndexer());
-        JavaPairRDD<String, Tuple2<File, File>> bamTargets = bamsByContigRDD.mapValues(new IndelTargetCreator(this.pathToReference,
-                                                                     this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
-                                                                     this.coresPerNode));
 
         this.log.info("Realigning indels...");
-        JavaPairRDD<String, File> realignedIndels = bamTargets.mapValues(new RealignIndels(this.pathToReference,
+        JavaPairRDD<String, File> realignedIndels = bamsByContigRDD.mapValues(new RealignIndels(this.pathToReference, indelTargets,
                                                                                        this.toolsExtraArgs.getProperty("IndelRealigner")));
 
         return realignedIndels;
