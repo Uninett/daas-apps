@@ -29,11 +29,7 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
         File outputIntervalsFile = new File(outputIntervalsFilename);
         changeArgument("-o", outputIntervalsFile.getPath());
 
-        try {
-            executeProgram();
-        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
-            executeProgram();
-        }
+        executeProgram();
         return outputIntervalsFile;
     }
 

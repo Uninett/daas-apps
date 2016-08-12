@@ -24,11 +24,7 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<
         changeArgument("-I", inputBam.getAbsolutePath());
         changeArgument("-o", outputFilename);
 
-        try {
-            executeProgram();
-        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
-            executeProgram();
-        }
+        executeProgram();
         return new File(outputFilename);
     }
 }

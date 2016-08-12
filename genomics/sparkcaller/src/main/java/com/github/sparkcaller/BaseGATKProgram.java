@@ -21,7 +21,11 @@ public class BaseGATKProgram implements Serializable {
     }
 
     protected void executeProgram() throws Exception {
-        CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+        try {
+            CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+        }
     }
 
     protected void setThreads(String availableCoresPerNode) {
