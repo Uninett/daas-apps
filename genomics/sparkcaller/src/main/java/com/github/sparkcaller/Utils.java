@@ -1,5 +1,9 @@
 package com.github.sparkcaller;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +58,9 @@ public class Utils {
         return prop;
     }
 
-    public static File moveToDir(File fileToCopy, String targetPath) {
+    public static File moveToDir(File fileToCopy, String targetPath) throws IOException {
         File outputFile = new File(targetPath, fileToCopy.getName());
-        fileToCopy.renameTo(outputFile);
+        FileUtils.moveFile(fileToCopy, outputFile);
 
         return outputFile;
     }
