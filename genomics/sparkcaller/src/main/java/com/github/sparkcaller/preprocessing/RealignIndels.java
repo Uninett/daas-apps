@@ -33,7 +33,11 @@ public class RealignIndels extends BaseGATKProgram implements Function<File, Fil
         File outputBamFile = new File(newFileName);
         changeArgument("-o", outputBamFile.getPath());
 
-        executeProgram();
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
         return outputBamFile;
     }
 }
