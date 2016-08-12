@@ -30,7 +30,11 @@ public class BQSRTargetGenerator extends BaseGATKProgram {
 
         setOutputFile(outputTable.getPath());
 
-        executeProgram();
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
         return outputTable;
     }
 }

@@ -33,7 +33,11 @@ public class BQSR extends BaseGATKProgram implements Function<File, File> {
 
         changeArgument("-o", outputBam.getPath());
 
-        executeProgram();
+        try {
+            executeProgram();
+        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+            executeProgram();
+        }
         return outputBam;
     }
 }
