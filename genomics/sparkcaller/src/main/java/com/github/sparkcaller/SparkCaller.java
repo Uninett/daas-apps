@@ -118,11 +118,7 @@ public class SparkCaller {
         bqsrTargets = Utils.moveToDir(bqsrTargets, this.outputFolder);
 
         List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged);
-        List<Tuple2<String, File>> movedBAMFilesByChromosome = new ArrayList<Tuple2<String, File>>();
-        for (Tuple2<String, File> bamTuple : bamFilesByChromosomeTuple) {
-            File newFile = Utils.moveToDir(bamTuple._2, this.outputFolder);
-            movedBAMFilesByChromosome.add(new Tuple2<>(bamTuple._1, newFile));
-        }
+        List<Tuple2<String, File>> movedBAMFilesByChromosome = Utils.moveFilesToDir(bamFilesByChromosomeTuple, this.outputFolder);
 
         JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(movedBAMFilesByChromosome);
         bamFilesRDD.mapValues(new BamIndexer()).collect();
@@ -145,11 +141,8 @@ public class SparkCaller {
 
         this.log.info("Splitting BAMs by chromosome...");
         List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(bamFile);
-        List<Tuple2<String, File>> movedBamsByContigWithName = new ArrayList<Tuple2<String, File>>();
-        for (Tuple2<String, File> bamTuple : bamsByContigWithName) {
-            File newFile = Utils.moveToDir(bamTuple._2, this.outputFolder);
-            movedBamsByContigWithName.add(new Tuple2<>(bamTuple._1, newFile));
-        }
+        List<Tuple2<String, File>> movedBamsByContigWithName = Utils.moveFilesToDir(bamsByContigWithName, this.outputFolder);
+
         JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(movedBamsByContigWithName);
         bamsByContigRDD.mapValues(new BamIndexer()).collect();
 
