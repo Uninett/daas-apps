@@ -14,6 +14,8 @@ public class SAMFileUtils {
 
     public static File mergeBAMFiles(List<File> samFiles, String outputFileName) {
         MergeSamFiles samMerger = new MergeSamFiles();
+        samMerger.USE_THREADING = true;
+        samMerger.ASSUME_SORTED = true;
         ArrayList<String> args = new ArrayList<>();
 
         for (File samFile : samFiles) {
