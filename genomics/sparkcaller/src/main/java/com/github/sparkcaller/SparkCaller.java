@@ -143,7 +143,17 @@ public class SparkCaller {
         File indelTargets = indelTargetCreator.createTargets(bamFile);
         indelTargets = Utils.moveToDir(indelTargets, this.outputFolder);
 
+        this.log.info("Splitting BAMs by chromosome...");
         List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(bamFile);
+        List<Tuple2<String, File>> movedBamsByContigWithName = new ArrayList<Tuple2<String, File>>();
+        for (Tuple2<String, File> bamTuple : bamsByContigWithName) {
+            if (!bamTuple._1.equals("unmapped")) {
+                File newFile = Utils.moveToDir(bamTuple._2, this.outputFolder);
+                movedBamsByContigWithName.add(new Tuple2<>(bamTuple._1, newFile));
+            }
+        }
+        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(movedBamsByContigWithName);
+        bamsByContigRDD.mapValues(new BamIndexer()).collect();
 
         this.log.info("Realigning indels...");
         JavaPairRDD<String, File> realignedIndels = bamsByContigRDD.mapValues(new RealignIndels(this.pathToReference, indelTargets,
