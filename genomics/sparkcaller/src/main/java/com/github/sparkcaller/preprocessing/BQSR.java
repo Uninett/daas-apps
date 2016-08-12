@@ -26,12 +26,12 @@ public class BQSR extends BaseGATKProgram implements Function<File, File> {
 
     @Override
     public File call(File bamFile) throws Exception {
-        setInputFile(bamFile.getPath());
+        changeArgument("-I", bamFile.getPath());
 
         String outputBamFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-bqsr.bam";
         File outputBam = new File(outputBamFilename);
 
-        setOutputFile(outputBam.getPath());
+        changeArgument("-o", outputBam.getPath());
 
         executeProgram();
         return outputBam;
