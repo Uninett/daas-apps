@@ -17,14 +17,15 @@ import java.util.ArrayList;
  *
  * For more information.
  */
-public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<File, File>, File> {
+public class RealignIndels extends BaseGATKProgram implements Function<File, File> {
 
-    public RealignIndels(String pathToReference, String extraArgs) {
+    public RealignIndels(String pathToReference, File indelTargets, String extraArgs) {
         super("IndelRealigner", extraArgs);
         setReference(pathToReference);
         changeArgument("-targetIntervals", indelTargets.getPath());
 }
 
+    public File call(File inputBam) throws Exception {
         changeArgument("-I", inputBam.getPath());
 
         final String newFileName = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
