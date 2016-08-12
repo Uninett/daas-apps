@@ -78,7 +78,9 @@ public class SparkCaller {
         if (samFiles != null) {
             this.log.info("Distributing the SAM files to the nodes...");
             JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
+
             JavaRDD<File> bamFilesRDD = this.convertToSortedBam(samFilesRDD);
+            bamFilesRDD = bamFilesRDD.map(new FileMover(this.outputFolder));
             List<File> bamFiles = bamFilesRDD.collect();
 
             File mergedBAMFile;
@@ -89,6 +91,7 @@ public class SparkCaller {
             }
 
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
+            dedupedBAMFile = Utils.moveToDir(dedupedBAMFile, this.outputFolder);
 
             JavaPairRDD<String, File> realignedBamFilesRDD = realignIndels(dedupedBAMFile);
             List<File> realignedBAMFiles = realignedBamFilesRDD.values().collect();
@@ -112,6 +115,7 @@ public class SparkCaller {
                                                                          this.toolsExtraArgs.getProperty("BaseRecalibrator"),
                                                                          this.coresPerNode);
         File bqsrTargets = bqsrTargetGenerator.generateTargets(BAMFilesMerged);
+        bqsrTargets = Utils.moveToDir(bqsrTargets, this.outputFolder);
 
         List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged);
         JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(bamFilesByChromosomeTuple);
