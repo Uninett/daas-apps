@@ -75,6 +75,4 @@ public class SAMFileUtils {
 
         return outputFiles;
     }
-
-    }
 }
