@@ -7,23 +7,31 @@ A version of the JAR can be found [here](https://f.128.no/).
 
 ### Usage
 ```
-java -jar sparkcaller-1.0.jar                    \
--CPN <Cores per node>                            \
--O <Output folder>                               \
--C <Path to config file>                         \
--R <Path to reference file>                      \
--I <Path to the folder containing the SAM files> \
+spark-submit                                      \
+--class com.github.sparkcaller.SparkCaller        \
+--executor-memory <RAM per executor>              \
+--driver-memory  <driver RAM>                     \
+sparkcaller-1.0.jar                               \
+-CPN <Cores per node>                             \
+-O <Output folder>                                \
+-C <Path to config file>                          \
+-R <Path to reference file>                       \
+-I <Path to the folder containing the SAM files>  \
 -S <Path to known sites>
 ```
 
 Ex.
 ```
-java -jar sparkcaller-1.0.jar                    \
--CPN 4                                           \
--O /data/hdfs/sparkcaller/                       \
--C sparkcaller.properties                        \
--R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta   \
--I /data/hdfs/sparkcaller/sams/                  \
+spark-submit                                      \
+--class com.github.sparkcaller.SparkCaller        \
+--executor-memory 16G                             \
+--driver-memory  6G                               \
+sparkcaller-1.0.jar                               \
+-CPN 4                                            \
+-O /data/hdfs/sparkcaller/                        \
+-C sparkcaller.properties                         \
+-R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
+-I /data/hdfs/sparkcaller/sams/                   \
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
 ```
 
