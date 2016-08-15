@@ -35,6 +35,21 @@ sparkcaller-1.0.jar                               \
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
 ```
 
+You can also use the sh script `submit-sparkcaller.sh` to start the job.
+This script passes all arguments directly to the sparkcaller. Edit the file to
+change the default Spark options.
+The script can be used in the following way:
+
+```
+./submit-sparkcaller.sh                           \
+-CPN 4                                            \
+-O /data/hdfs/sparkcaller/                        \
+-C sparkcaller.properties                         \
+-R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
+-I /data/hdfs/sparkcaller/sams/                   \
+-S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
+```
+
 ### Configuration per tool
 It is possible to pass abitary arguments to each tool in the GATK toolkit.
 The input, reference, and output arguments are set automatically (KnownSites is
