@@ -1,3 +1,4 @@
 [submodule "genomics/SparkBWA"]
 	path = genomics/SparkBWA
 	url = https://github.com/paalka/SparkBWA
+	branch = master
