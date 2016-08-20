@@ -16,6 +16,8 @@ tool.
   SparkBWA and does variant discovery. It uses the [GATK
   toolkit](https://www.google.no/search?q=GATK+bqsr&oq=GATK&aqs=chrome.0.69i59j69i57j69i60l4.431j0j1&sourceid=chrome&ie=UTF-8#safe=off&q=GATK+) to perform the
   analysis.
+* **Pipeline runner** is a tool for running SparkBWA and SparkCaller as
+  a single pipeline in a standalone JAR file.
 
 ### Requirements
 * Indexed FASTA reference files (as normally required in the GATK pipeline).
