@@ -23,8 +23,8 @@ tool.
   here: ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle).
 * Known, truth, and training sets to be used when performing
   [VQSR](https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantrecalibration_VariantRecalibrator.php).
-* It is preferred that HDFS is mounted using FUSE, as this makes it a lot
-  easier to distribute the reference etc. to the nodes in the cluster.
+* It is preferred that NFS is used over HDFS, as GATK seemingly has some
+  problem when writing to HDFS.
 
 ![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
 using Spark")
