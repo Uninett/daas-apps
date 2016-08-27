@@ -83,13 +83,7 @@ public class SparkCaller {
             JavaRDD<File> bamFilesRDD = this.convertToSortedBam(samFilesRDD);
             List<File> bamFiles = bamFilesRDD.collect();
 
-            File mergedBAMFile;
-            if (bamFiles.size() > 1) {
-                mergedBAMFile = SAMFileUtils.mergeBAMFiles(bamFiles, "merged.bam");
-            } else {
-                mergedBAMFile = bamFiles.get(0);
-            }
-
+            File mergedBAMFile = mergeFiles(bamFiles);
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
 
             JavaPairRDD<String, File> realignedBamFilesRDD = realignIndels(dedupedBAMFile);
@@ -101,7 +95,17 @@ public class SparkCaller {
         }
 
         return null;
+    }
 
+    public File mergeFiles(List<File> BAMfilesToMerge) {
+        File mergedBAMFile;
+        if (BAMfilesToMerge.size() > 1) {
+            mergedBAMFile = SAMFileUtils.mergeBAMFiles(BAMfilesToMerge, "merged.bam");
+        } else {
+            mergedBAMFile = BAMfilesToMerge.get(0);
+
+        }
+        return mergedBAMFile;
     }
 
     public JavaPairRDD<String, File> performBQSR(List<File> bamFiles) throws Exception {
