@@ -16,11 +16,15 @@ import java.io.File;
  */
 public class BQSRTargetGenerator extends BaseGATKProgram {
 
-    public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs, String coresPerNode) {
+    private String outputFolder;
+
+    public BQSRTargetGenerator(String pathToReference, String knownSites, String outputFolder, String extraArgs, String coresPerNode) {
         super("BaseRecalibrator", extraArgs);
         setReference(pathToReference);
         addArgument("-knownSites", knownSites);
         setThreads(coresPerNode);
+
+        this.outputFolder = outputFolder;
     }
 
     public File generateTargets(File file) throws Exception {
@@ -31,6 +35,6 @@ public class BQSRTargetGenerator extends BaseGATKProgram {
         setOutputFile(outputTable.getPath());
 
         executeProgram();
-        return outputTable;
+        return Utils.moveToDir(outputTable, this.outputFolder);
     }
 }

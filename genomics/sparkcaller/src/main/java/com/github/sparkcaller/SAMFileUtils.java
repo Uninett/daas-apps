@@ -31,7 +31,7 @@ public class SAMFileUtils {
         return new File(outputFileName);
     }
 
-    public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile) throws IOException {
+    public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile, String outputFolder) throws IOException {
         SamReader samFile = SamReaderFactory.makeDefault().open(bamFile);
         SAMFileHeader samFileHeader = samFile.getFileHeader();
         HashMap<String, SAMFileWriter> contigMapper = new HashMap<>();
@@ -73,6 +73,6 @@ public class SAMFileUtils {
         }
         contigMapper.values().forEach(SAMFileWriter::close);
 
-        return outputFiles;
+        return Utils.moveFilesToDir(outputFiles, outputFolder);
     }
 }

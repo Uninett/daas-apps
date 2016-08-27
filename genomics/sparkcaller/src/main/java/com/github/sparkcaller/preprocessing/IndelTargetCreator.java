@@ -17,9 +17,12 @@ import java.io.File;
  *
  */
 public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
-    public IndelTargetCreator(String pathToReference, String extraArgsString, String coresPerNode) {
+    private String outputFolder;
+
+    public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String coresPerNode) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
+        this.outputFolder = outputFolder;
     }
 
     public File createTargets(File bamFile) throws Exception {
@@ -30,7 +33,7 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
         changeArgument("-o", outputIntervalsFile.getPath());
 
         executeProgram();
-        return outputIntervalsFile;
+        return Utils.moveToDir(outputIntervalsFile, this.outputFolder);
     }
 
     @Override

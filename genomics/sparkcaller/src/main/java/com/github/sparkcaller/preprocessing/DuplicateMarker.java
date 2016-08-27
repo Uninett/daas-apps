@@ -12,9 +12,11 @@ import java.util.ArrayList;
  */
 public class DuplicateMarker {
     final private ArrayList<String> extraArgs;
+    final private String outputFolder;
 
-    public DuplicateMarker(String extraArgsString) {
+    public DuplicateMarker(String outputFolder, String extraArgsString) {
         this.extraArgs = Utils.possibleStringToArgs(extraArgsString);
+        this.outputFolder = outputFolder;
     }
 
     public File markDuplicates(File file) throws Exception {
@@ -38,6 +40,6 @@ public class DuplicateMarker {
         }
 
         markDuplicates.instanceMain(markerArgs.toArray(new String[0]));
-        return outputBamFile;
+        return Utils.moveToDir(outputBamFile, this.outputFolder);
     }
 }

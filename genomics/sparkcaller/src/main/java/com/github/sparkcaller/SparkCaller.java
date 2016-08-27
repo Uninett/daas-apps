@@ -54,12 +54,13 @@ public class SparkCaller {
 
     public JavaRDD<File> convertToSortedBam(JavaRDD<File> files) {
         this.log.info("Converting the SAM files to sorted BAM files...");
-        return files.map(new SamToSortedBam());
+        return files.map(new SamToSortedBam()).map(new FileMover(this.outputFolder));
     }
 
     public File markDuplicates(File bamFile) throws Exception {
         this.log.info("Marking duplicates...");
-        DuplicateMarker duplicateMarker = new DuplicateMarker(this.toolsExtraArgs.getProperty("MarkDuplicates"));
+        DuplicateMarker duplicateMarker = new DuplicateMarker(this.outputFolder,
+                                                              this.toolsExtraArgs.getProperty("MarkDuplicates"));
         return duplicateMarker.markDuplicates(bamFile);
     }
 
@@ -80,7 +81,6 @@ public class SparkCaller {
             JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
 
             JavaRDD<File> bamFilesRDD = this.convertToSortedBam(samFilesRDD);
-            bamFilesRDD = bamFilesRDD.map(new FileMover(this.outputFolder));
             List<File> bamFiles = bamFilesRDD.collect();
 
             File mergedBAMFile;
@@ -91,7 +91,6 @@ public class SparkCaller {
             }
 
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
-            dedupedBAMFile = Utils.moveToDir(dedupedBAMFile, this.outputFolder);
 
             JavaPairRDD<String, File> realignedBamFilesRDD = realignIndels(dedupedBAMFile);
             List<File> realignedBAMFiles = realignedBamFilesRDD.values().collect();
@@ -113,14 +112,12 @@ public class SparkCaller {
         BQSRTargetGenerator bqsrTargetGenerator= new BQSRTargetGenerator(this.pathToReference,
                                                                          this.knownSites,
                                                                          this.toolsExtraArgs.getProperty("BaseRecalibrator"),
-                                                                         this.coresPerNode);
+                                                                         this.coresPerNode,
+                                                                         this.outputFolder);
         File bqsrTargets = bqsrTargetGenerator.generateTargets(BAMFilesMerged);
-        bqsrTargets = Utils.moveToDir(bqsrTargets, this.outputFolder);
 
-        List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged);
-        List<Tuple2<String, File>> movedBAMFilesByChromosome = Utils.moveFilesToDir(bamFilesByChromosomeTuple, this.outputFolder);
-
-        JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(movedBAMFilesByChromosome);
+        List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged, this.outputFolder);
+        JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(bamFilesByChromosomeTuple);
         bamFilesRDD.mapValues(new BamIndexer()).collect();
 
         this.log.info("Performing BQSR...");
@@ -134,16 +131,15 @@ public class SparkCaller {
         this.log.info("Creating indel targets...");
         BamIndexer.indexBam(bamFile);
         IndelTargetCreator indelTargetCreator = new IndelTargetCreator(this.pathToReference,
-                                                                     this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
-                                                                     this.coresPerNode);
+                                                                       this.outputFolder,
+                                                                       this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
+                                                                       this.coresPerNode);
         File indelTargets = indelTargetCreator.createTargets(bamFile);
-        indelTargets = Utils.moveToDir(indelTargets, this.outputFolder);
 
         this.log.info("Splitting BAMs by chromosome...");
-        List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(bamFile);
-        List<Tuple2<String, File>> movedBamsByContigWithName = Utils.moveFilesToDir(bamsByContigWithName, this.outputFolder);
+        List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(bamFile, this.outputFolder);
 
-        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(movedBamsByContigWithName);
+        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName);
         bamsByContigRDD.mapValues(new BamIndexer()).collect();
 
         this.log.info("Realigning indels...");
@@ -177,7 +173,7 @@ public class SparkCaller {
             this.log.info("Recalibrating variants...");
             File recalibratedVariants = recalibrateVariants(mergedVariants);
 
-            return recalibratedVariants;
+            return Utils.moveToDir(recalibratedVariants, this.outputFolder);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -231,7 +227,6 @@ public class SparkCaller {
             JavaPairRDD<String, File> preprocessedBAMFiles = preprocessSAMFiles(pathToSAMFiles);
             if (preprocessedBAMFiles != null) {
                 File vcfVariants = discoverVariants(preprocessedBAMFiles);
-                Utils.moveToDir(vcfVariants, this.outputFolder);
 
                 return vcfVariants;
             } else {
