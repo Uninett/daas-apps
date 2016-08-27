@@ -12,23 +12,30 @@ import java.util.List;
 
 public class SAMFileUtils {
 
-    public static File mergeBAMFiles(List<File> samFiles, String outputFileName) {
-        MergeSamFiles samMerger = new MergeSamFiles();
-        samMerger.USE_THREADING = true;
-        samMerger.ASSUME_SORTED = true;
-        ArrayList<String> args = new ArrayList<>();
+    public static File mergeBAMFiles(List<File> samFiles, String outputFileName) throws IOException {
+        File outputFile;
+        if (samFiles.size() > 1) {
+            MergeSamFiles samMerger = new MergeSamFiles();
+            samMerger.USE_THREADING = true;
+            samMerger.ASSUME_SORTED = true;
+            ArrayList<String> args = new ArrayList<>();
 
-        for (File samFile : samFiles) {
-            args.add("I=");
-            args.add(samFile.getPath());
+            for (File samFile : samFiles) {
+                args.add("I=");
+                args.add(samFile.getPath());
+            }
+
+            args.add("O=");
+            args.add(outputFileName);
+
+            samMerger.instanceMain(args.toArray(new String[0]));
+            outputFile = new File(outputFileName);
+        } else {
+            outputFile = samFiles.get(0);
         }
 
-        args.add("O=");
-        args.add(outputFileName);
+        return outputFile;
 
-        samMerger.instanceMain(args.toArray(new String[0]));
-
-        return new File(outputFileName);
     }
 
     public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile, String outputFolder) throws IOException {
