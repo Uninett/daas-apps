@@ -86,9 +86,14 @@ public class SparkCaller {
             File mergedBAMFile = mergeFiles(bamFiles);
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
 
+            BamIndexer.indexBam(dedupedBAMFile);
             JavaPairRDD<String, File> realignedBamFilesRDD = realignIndels(dedupedBAMFile);
             List<File> realignedBAMFiles = realignedBamFilesRDD.values().collect();
-            JavaPairRDD<String, File> recalibratedBamFilesRDD = performBQSR(realignedBAMFiles);
+
+            File BAMFilesMerged = mergeFiles(realignedBAMFiles);
+            BamIndexer.indexBam(BAMFilesMerged);
+
+            JavaPairRDD<String, File> recalibratedBamFilesRDD = performBQSR(BAMFilesMerged);
 
             this.log.info("Preprocessing finished!");
             return recalibratedBamFilesRDD;
@@ -108,19 +113,16 @@ public class SparkCaller {
         return mergedBAMFile;
     }
 
-    public JavaPairRDD<String, File> performBQSR(List<File> bamFiles) throws Exception {
+    public JavaPairRDD<String, File> performBQSR(File bamFile) throws Exception {
         this.log.info("Creating targets on which to perform BQSR...");
-        File BAMFilesMerged = SAMFileUtils.mergeBAMFiles(bamFiles, "merged.bam");
-
-        BamIndexer.indexBam(BAMFilesMerged);
         BQSRTargetGenerator bqsrTargetGenerator= new BQSRTargetGenerator(this.pathToReference,
                                                                          this.knownSites,
                                                                          this.toolsExtraArgs.getProperty("BaseRecalibrator"),
                                                                          this.coresPerNode,
                                                                          this.outputFolder);
-        File bqsrTargets = bqsrTargetGenerator.generateTargets(BAMFilesMerged);
+        File bqsrTargets = bqsrTargetGenerator.generateTargets(bamFile);
 
-        List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(BAMFilesMerged, this.outputFolder);
+        List<Tuple2<String, File>> bamFilesByChromosomeTuple = SAMFileUtils.splitBAMByChromosome(bamFile, this.outputFolder);
         JavaPairRDD<String, File> bamFilesRDD = this.sparkContext.parallelizePairs(bamFilesByChromosomeTuple);
         bamFilesRDD.mapValues(new BamIndexer()).collect();
 
@@ -133,7 +135,6 @@ public class SparkCaller {
 
     public JavaPairRDD<String, File> realignIndels(File bamFile) throws Exception {
         this.log.info("Creating indel targets...");
-        BamIndexer.indexBam(bamFile);
         IndelTargetCreator indelTargetCreator = new IndelTargetCreator(this.pathToReference,
                                                                        this.outputFolder,
                                                                        this.toolsExtraArgs.getProperty("RealignerTargetCreator"),
