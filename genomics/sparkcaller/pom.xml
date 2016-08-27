@@ -15,9 +15,8 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-      <!-- GATK is not hosted at maven central, so obtain it from my (paalka's
-           private mirror) -->
-      <repositories>
+    <!-- GATK is not hosted at maven central, so obtain it from my (paalka's private mirror) -->
+    <repositories>
         <repository>
           <id>128</id>
           <name>mvn.128.no</name>
@@ -26,28 +25,28 @@
       </repositories>
 
     <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
-                    <executions>
-                      <execution>
-                        <phase>package</phase>
-                        <goals>
-                          <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                          <artifactSet>
-                            <excludes>
-                              <exclude>org.apache.spark</exclude>
-                            </excludes>
-                          </artifactSet>
-                        </configuration>
-                      </execution>
-                    </executions>
-                  </plugin>
-            </plugins>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                  <execution>
+                    <phase>package</phase>
+                    <goals>
+                      <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                      <artifactSet>
+                        <excludes>
+                          <exclude>org.apache.spark</exclude>
+                        </excludes>
+                      </artifactSet>
+                    </configuration>
+                  </execution>
+                </executions>
+              </plugin>
+        </plugins>
     </build>
 
     <dependencies>
