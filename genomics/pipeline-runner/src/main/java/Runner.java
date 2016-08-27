@@ -125,22 +125,16 @@ public class Runner {
 
     public static BwaInterpreter initSparkBwa(JavaSparkContext sparkContext, CommandLine bwaOptions, Properties extraArgs) {
         BwaOptions sparkBwaOptions = initSparkBwaOptions(bwaOptions, extraArgs);
-        BwaInterpreter bwaInterpreter = new BwaInterpreter(sparkBwaOptions, sparkContext.sc());
-
-        return bwaInterpreter;
+        return new BwaInterpreter(sparkBwaOptions, sparkContext.sc());
     }
 
     public static SparkCaller initSparkCaller(JavaSparkContext sparkContext, CommandLine gatkOptions, Properties extraArgs) {
         String pathToReference = gatkOptions.getOptionValue("Reference");
         String outputDirectory = gatkOptions.getOptionValue("OutputFolder");
         String knownSites = gatkOptions.getOptionValue("KnownSites");
-        String configFilepath = gatkOptions.getOptionValue("ConfigFile");
         String coresPerNode = gatkOptions.getOptionValue("CoresPerNode");
-        Properties toolsExtraArguments = com.github.sparkcaller.Utils.loadConfigFile(configFilepath);
 
-        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites, toolsExtraArguments,
-                                             coresPerNode, outputDirectory);
-        return caller;
+        return new SparkCaller(sparkContext, pathToReference, knownSites, extraArgs, coresPerNode, outputDirectory);
     }
 
     public static void main(String argv[]) {
