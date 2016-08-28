@@ -194,9 +194,19 @@ public class SparkCaller {
         }
     }
 
-    private Tuple2<File, File> performVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
-        VQSRTargetCreator targetCreator = new VQSRTargetCreator(this.pathToReference, extraArgs, this.coresPerNode);
-        return targetCreator.createTargets(vcfToRecalibrate, mode);
+    private File performVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
+        if (extraArgs != null) {
+            VQSRRecalibrationApplier vqsrApplier = new VQSRRecalibrationApplier(this.pathToReference,
+                    this.toolsExtraArgs.getProperty("ApplyRecalibration"),
+                    this.coresPerNode);
+
+            VQSRTargetCreator targetCreator = new VQSRTargetCreator(this.pathToReference, extraArgs, this.coresPerNode);
+            Tuple2<File, File> snpTargets = targetCreator.createTargets(vcfToRecalibrate, mode);
+
+            return vqsrApplier.applyRecalibration(vcfToRecalibrate, snpTargets, "SNP");
+        } else {
+            return null;
+        }
 
     }
 
@@ -205,19 +215,8 @@ public class SparkCaller {
         String SNPextraArgs = this.toolsExtraArgs.getProperty("SNPVariantRecalibrator");
 
         try {
-            VQSRRecalibrationApplier vqsrApplier = new VQSRRecalibrationApplier(this.pathToReference,
-                    this.toolsExtraArgs.getProperty("ApplyRecalibration"),
-                    this.coresPerNode);
-
-            if (SNPextraArgs != null) {
-                Tuple2<File, File> snpTargets = performVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
-                vcfToRecalibrate = vqsrApplier.applyRecalibration(vcfToRecalibrate, snpTargets, "SNP");
-            }
-
-            if (INDELextraArgs != null) {
-                Tuple2<File, File> indelTargets = performVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
-                vcfToRecalibrate = vqsrApplier.applyRecalibration(vcfToRecalibrate, indelTargets, "INDEL");
-            }
+            vcfToRecalibrate = performVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
+            vcfToRecalibrate = performVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
 
             return vcfToRecalibrate;
         } catch (Exception e) {
