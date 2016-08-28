@@ -78,7 +78,7 @@ public class Utils {
     }
 
     public static ArrayList<String> possibleStringToArgs(String maybeString) {
-        if (maybeString == null) {
+        if (maybeString == null || maybeString.isEmpty()) {
             return null;
         }
 
