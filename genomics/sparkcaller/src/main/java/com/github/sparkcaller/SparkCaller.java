@@ -53,9 +53,9 @@ public class SparkCaller {
         this.outputFolder = outputFolder;
     }
 
-    public File convertToSortedBam(JavaRDD<File> files) {
+    public File convertToSortedBAM(JavaRDD<File> files) {
         this.log.info("Converting the SAM files to sorted BAM files...");
-        List<File> bamFiles = files.map(new SamToSortedBam()).map(new FileMover(this.outputFolder)).collect();
+        List<File> bamFiles = files.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
         try {
             return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder);
         } catch (IOException e) {
@@ -71,7 +71,7 @@ public class SparkCaller {
         DuplicateMarker duplicateMarker = new DuplicateMarker(this.outputFolder,
                                                               this.toolsExtraArgs.getProperty("MarkDuplicates"));
         File dedupedBAMFile = duplicateMarker.markDuplicates(bamFile);
-        BamIndexer.indexBam(dedupedBAMFile);
+        BAMIndexer.indexBAM(dedupedBAMFile);
         return dedupedBAMFile;
     }
 
@@ -91,13 +91,13 @@ public class SparkCaller {
             this.log.info("Distributing the SAM files to the nodes...");
             JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
 
-            File mergedBAMFile = convertToSortedBam(samFilesRDD);
+            File mergedBAMFile = convertToSortedBAM(samFilesRDD);
             File dedupedBAMFile = markDuplicates(mergedBAMFile);
             File realignedBAMFile = realignIndels(dedupedBAMFile);
-            File recalibratedBamFile = performBQSR(realignedBAMFile);
+            File recalibratedBAMFile = performBQSR(realignedBAMFile);
 
             this.log.info("Preprocessing finished!");
-            return recalibratedBamFile;
+            return recalibratedBAMFile;
         }
 
         return null;
@@ -125,7 +125,7 @@ public class SparkCaller {
 
     private File mergeAndCreateIndex(List<File> inputBAMFiles) throws Exception {
         File mergedBAMFile = SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder);
-        BamIndexer.indexBam(mergedBAMFile);
+        BAMIndexer.indexBAM(mergedBAMFile);
 
         return mergedBAMFile;
     }
@@ -133,7 +133,7 @@ public class SparkCaller {
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
         List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(inputBAMFile, this.outputFolder);
         JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName);
-        bamsByContigRDD.mapValues(new BamIndexer()).collect();
+        bamsByContigRDD.mapValues(new BAMIndexer()).collect();
 
         return bamsByContigRDD;
     }

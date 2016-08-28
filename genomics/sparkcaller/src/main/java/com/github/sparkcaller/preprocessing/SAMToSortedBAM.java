@@ -7,7 +7,7 @@ import picard.sam.SortSam;
 import java.io.File;
 import java.util.ArrayList;
 
-public class SamToSortedBam implements Function<File, File> {
+public class SAMToSortedBAM implements Function<File, File> {
     public File call(File file) throws Exception {
         String newFileName = Utils.removeExtenstion(file.getName(), "sam") + ".bam";
         File outputSamFile = new File(newFileName);
