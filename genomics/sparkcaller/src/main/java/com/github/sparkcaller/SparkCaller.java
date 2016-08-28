@@ -156,13 +156,17 @@ public class SparkCaller {
                                                                   this.toolsExtraArgs.getProperty("HaplotypeCaller"),
                                                                   this.coresPerNode));
         List<File> variantsFiles = variantsVCFFiles.collect();
+        return performJointGenotyping(variantsFiles);
+    }
+
+    private File performJointGenotyping(List<File> variantFiles) {
         this.log.info("Performing joint genotyping...");
         GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
-                                                     this.toolsExtraArgs.getProperty("GenotypeGVCFs"),
-                                                     this.coresPerNode);
+                this.toolsExtraArgs.getProperty("GenotypeGVCFs"),
+                this.coresPerNode);
         try {
             File outputFile = new File(this.outputFolder, "merged.vcf");
-            File mergedVariants = genotypeGVCF.performJointGenotyping(variantsFiles, outputFile.getPath());
+            File mergedVariants = genotypeGVCF.performJointGenotyping(variantFiles, outputFile.getPath());
 
             this.log.info("Recalibrating variants...");
             File recalibratedVariants = recalibrateVariants(mergedVariants);
