@@ -72,7 +72,10 @@ public class Utils {
 
     public static File moveToDir(File fileToCopy, String targetPath) throws IOException {
         File outputFile = new File(targetPath, fileToCopy.getName());
-        FileUtils.moveFile(fileToCopy, outputFile);
+
+        if (!outputFile.exists()) {
+            FileUtils.moveFile(fileToCopy, outputFile);
+        }
 
         return outputFile;
     }
