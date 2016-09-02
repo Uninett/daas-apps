@@ -61,7 +61,7 @@ public class SparkCaller {
         List<File> bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
 
         try {
-            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder);
+            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
         } catch (IOException e) {
             this.log.error("Could not merge files!");
             e.printStackTrace();
@@ -132,15 +132,15 @@ public class SparkCaller {
                     bqsrTargets.getPath(),
                     printReadsExtraArgs,
                     this.coresPerNode));
-            return mergeAndCreateIndex(recalibratedBAMFilesRDD.values().collect());
+            return mergeAndCreateIndex(recalibratedBAMFilesRDD.values().collect(), "merged-bqsr");
         }
 
         this.log.info("Skipping BQSR! Args for BaseRecalibrator or/and PrintReads was not provided.");
         return bamFile;
     }
 
-    private File mergeAndCreateIndex(List<File> inputBAMFiles) throws Exception {
-        File mergedBAMFile = SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder);
+    private File mergeAndCreateIndex(List<File> inputBAMFiles, String outputFileName) throws Exception {
+        File mergedBAMFile = SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder, outputFileName);
         BAMIndexer.indexBAM(mergedBAMFile);
 
         return mergedBAMFile;
@@ -170,11 +170,11 @@ public class SparkCaller {
             JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(bamFile);
 
             this.log.info("Realigning indels...");
-            JavaPairRDD<String, File> realignedIndels = bamsByContigRDD.mapValues(new RealignIndels(this.pathToReference,
+            JavaRDD<File> realignedIndels = bamsByContigRDD.map(new RealignIndels(this.pathToReference,
                     indelTargets,
                     indelRealignerExtraArgs));
 
-            return mergeAndCreateIndex(realignedIndels.values().collect());
+            return mergeAndCreateIndex(realignedIndels.collect(), "merged-realigned");
         }
 
         this.log.info("Skipping indel realignment! Args for RealingerTargetCreator and/or IndelRealinger was not provided.");

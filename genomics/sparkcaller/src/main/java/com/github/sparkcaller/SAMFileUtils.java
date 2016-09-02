@@ -12,9 +12,16 @@ import java.util.List;
 
 public class SAMFileUtils {
 
-    public static File mergeBAMFiles(List<File> samFiles, String outputFileName) throws IOException {
+    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName) throws IOException {
         File outputFile;
         if (samFiles.size() > 1) {
+
+            // Make sure that the output file has a proper file extension.
+            if (!outputFileName.endsWith("bam")) {
+                outputFileName = outputFileName + ".bam";
+            }
+
+            outputFile = new File(outputPath, outputFileName);
             MergeSamFiles samMerger = new MergeSamFiles();
             samMerger.USE_THREADING = true;
             samMerger.ASSUME_SORTED = true;
@@ -26,10 +33,9 @@ public class SAMFileUtils {
             }
 
             args.add("O=");
-            args.add(outputFileName);
+            args.add(outputFile.getPath());
 
             samMerger.instanceMain(args.toArray(new String[0]));
-            outputFile = new File(outputFileName);
         } else {
             outputFile = samFiles.get(0);
         }
