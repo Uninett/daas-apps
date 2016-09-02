@@ -17,7 +17,7 @@ import java.util.ArrayList;
  *
  * For more information.
  */
-public class RealignIndels extends BaseGATKProgram implements Function<File, File> {
+public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<String, File>, File> {
 
     public RealignIndels(String pathToReference, File indelTargets, String extraArgs) {
         super("IndelRealigner", extraArgs);
@@ -25,7 +25,11 @@ public class RealignIndels extends BaseGATKProgram implements Function<File, Fil
         changeArgument("-targetIntervals", indelTargets.getPath());
 }
 
-    public File call(File inputBam) throws Exception {
+    public File call(Tuple2<String, File> contigTuple) throws Exception {
+        String contig = contigTuple._1;
+        File inputBam = contigTuple._2;
+
+        changeArgument("-L", contig);
         changeArgument("-I", inputBam.getPath());
 
         final String newFileName = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
