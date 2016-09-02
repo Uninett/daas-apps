@@ -21,8 +21,8 @@ tool.
 
 ### Requirements
 * Indexed FASTA reference files (as normally required in the GATK pipeline).
-* dbSNP files for the reference (the one for HG19 can be found
-  here: ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle).
+* dbSNP files for the reference (the one for HG19 can be found by following the
+  this [link](https://software.broadinstitute.org/gatk/download/bundle).
 * Known, truth, and training sets to be used when performing
   [VQSR](https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantrecalibration_VariantRecalibrator.php).
 * It is preferred that NFS is used over HDFS, as GATK seemingly has some
