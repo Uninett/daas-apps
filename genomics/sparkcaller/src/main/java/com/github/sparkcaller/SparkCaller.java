@@ -191,12 +191,16 @@ public class SparkCaller {
         this.log.info("Starting variant discovery!");
         this.log.info("Running HaplotypeCaller...");
         List<File> variantsFiles = maybePerformHaplotypeCalling(preprocessedBAMFile);
-        return performJointGenotyping(variantsFiles);
+        if (variantsFiles != null) {
+            return maybePerformJointGenotyping(variantsFiles);
+        } else {
+            return null;
+        }
     }
 
     public File discoverVariants(List<File> variantsFiles) throws IOException {
         this.log.info("Starting variant discovery!");
-        return performJointGenotyping(variantsFiles);
+        return maybePerformJointGenotyping(variantsFiles);
     }
 
     private List<File> maybePerformHaplotypeCalling(File preprocessedBAMFile) throws IOException {
@@ -214,27 +218,33 @@ public class SparkCaller {
         return null;
     }
 
-    private File performJointGenotyping(List<File> variantFiles) {
-        this.log.info("Performing joint genotyping...");
-        GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
-                this.toolsExtraArgs.getProperty("GenotypeGVCFs"),
-                this.coresPerNode);
-        try {
-            File outputFile = new File(this.outputFolder, "merged.vcf");
-            File mergedVariants = genotypeGVCF.performJointGenotyping(variantFiles, outputFile.getPath());
+    private File maybePerformJointGenotyping(List<File> variantFiles) {
+        String extraArgs = this.toolsExtraArgs.getProperty("GenotypeGVCFs");
 
-            this.log.info("Recalibrating variants...");
-            File recalibratedVariants = recalibrateVariants(mergedVariants);
+        if (extraArgs != null) {
+            this.log.info("Performing joint genotyping...");
+            GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
+                    extraArgs,
+                    this.coresPerNode);
+            try {
+                File outputFile = new File(this.outputFolder, "merged.vcf");
+                File mergedVariants = genotypeGVCF.performJointGenotyping(variantFiles, outputFile.getPath());
 
-            return Utils.moveToDir(recalibratedVariants, this.outputFolder);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-            return null;
+                this.log.info("Recalibrating variants...");
+                File recalibratedVariants = recalibrateVariants(mergedVariants);
+
+                return Utils.moveToDir(recalibratedVariants, this.outputFolder);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+                return null;
+            }
         }
+
+        return null;
     }
 
-    private File performVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
+    private File maybePerformVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
         if (extraArgs != null) {
             VQSRRecalibrationApplier vqsrApplier = new VQSRRecalibrationApplier(this.pathToReference,
                     this.toolsExtraArgs.getProperty("ApplyRecalibration"),
@@ -255,8 +265,8 @@ public class SparkCaller {
         String SNPextraArgs = this.toolsExtraArgs.getProperty("SNPVariantRecalibrator");
 
         try {
-            vcfToRecalibrate = performVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
-            vcfToRecalibrate = performVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
+            vcfToRecalibrate = maybePerformVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
+            vcfToRecalibrate = maybePerformVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
 
             return vcfToRecalibrate;
         } catch (Exception e) {
