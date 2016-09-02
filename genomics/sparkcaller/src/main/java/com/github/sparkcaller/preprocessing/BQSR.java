@@ -3,6 +3,7 @@ package com.github.sparkcaller.preprocessing;
 import com.github.sparkcaller.BaseGATKProgram;
 import com.github.sparkcaller.Utils;
 import org.apache.spark.api.java.function.Function;
+import scala.Tuple2;
 
 import java.io.File;
 
@@ -16,7 +17,7 @@ import java.io.File;
  * For more information.
  *
  */
-public class BQSR extends BaseGATKProgram implements Function<File, File> {
+public class BQSR extends BaseGATKProgram implements Function<Tuple2<String, File>, File> {
     public BQSR(String pathToReference, String bqsrTablePath, String extraArgsString, String coresPerNode) {
         super("PrintReads", extraArgsString);
         setReference(pathToReference);
@@ -25,10 +26,14 @@ public class BQSR extends BaseGATKProgram implements Function<File, File> {
     }
 
     @Override
-    public File call(File bamFile) throws Exception {
-        changeArgument("-I", bamFile.getPath());
+    public File call(Tuple2<String, File> contigTuple) throws Exception {
+        String contig = contigTuple._1;
+        File inputBam = contigTuple._2;
 
-        String outputBamFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-bqsr.bam";
+        changeArgument("-L", contig);
+        changeArgument("-I", inputBam.getPath());
+
+        String outputBamFilename = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-bqsr.bam";
         File outputBam = new File(outputBamFilename);
 
         changeArgument("-o", outputBam.getPath());

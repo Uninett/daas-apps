@@ -136,11 +136,11 @@ public class SparkCaller {
             JavaPairRDD<String, File> bamFilesRDD = splitByChromosomeAndCreateIndex(bamFile);
 
             this.log.info("Performing BQSR...");
-            JavaPairRDD<String, File> recalibratedBAMFilesRDD = bamFilesRDD.mapValues(new BQSR(this.pathToReference,
+            JavaRDD<File> recalibratedBAMFilesRDD = bamFilesRDD.map(new BQSR(this.pathToReference,
                     bqsrTargets.getPath(),
                     printReadsExtraArgs,
                     this.coresPerNode));
-            return mergeAndCreateIndex(recalibratedBAMFilesRDD.values().collect(), "merged-bqsr");
+            return mergeAndCreateIndex(recalibratedBAMFilesRDD.collect(), "merged-bqsr");
         }
 
         this.log.info("Skipping BQSR! Args for BaseRecalibrator or/and PrintReads was not provided.");
