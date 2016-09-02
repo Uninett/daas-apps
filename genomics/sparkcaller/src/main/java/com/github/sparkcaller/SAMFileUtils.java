@@ -36,8 +36,12 @@ public class SAMFileUtils {
             args.add(outputFile.getPath());
 
             samMerger.instanceMain(args.toArray(new String[0]));
-        } else {
+        } else if (samFiles.size() != 0) {
             outputFile = samFiles.get(0);
+        } else {
+            System.err.println("No files was given!");
+            System.exit(1);
+            return null;
         }
 
         return outputFile;
