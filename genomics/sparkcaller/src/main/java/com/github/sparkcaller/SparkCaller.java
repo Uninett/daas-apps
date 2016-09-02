@@ -1,10 +1,12 @@
 package com.github.sparkcaller;
 
 import com.github.sparkcaller.preprocessing.*;
+import com.github.sparkcaller.preprocessing.BAMIndexer;
 import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
 import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
 import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
+import htsjdk.samtools.*;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -61,9 +63,15 @@ public class SparkCaller {
         List<File> bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
 
         try {
-            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
+            File mergedFile = SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
+            BAMIndexer.indexBAM(mergedFile);
+            return mergedFile;
         } catch (IOException e) {
             this.log.error("Could not merge files!");
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
             return null;
