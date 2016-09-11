@@ -90,9 +90,9 @@ are valid:
 * BaseRecalibrator
 * PrintReads
 * HaplotypeCaller
+* GenotypeGVCFs
 * SNPVariantRecalibrator
 * INDELVariantRecalibrator
-* GenotypeGVCFs
 * ApplyRecalibration
 
 ### Recommended arguments
