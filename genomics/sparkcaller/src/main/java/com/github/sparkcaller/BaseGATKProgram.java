@@ -35,15 +35,22 @@ public class BaseGATKProgram implements Serializable {
     }
 
     protected void setInputFile(String inputFilepath) {
-        addArgument("-I", inputFilepath);
+        changeArgument("-I", inputFilepath);
     }
 
     protected void setReference(String pathToReference) {
-        addArgument("-R", pathToReference);
+        changeArgument("-R", pathToReference);
     }
 
     protected void setOutputFile(String outputPath) {
-        addArgument("-o", outputPath);
+        changeArgument("-o", outputPath);
+    }
+
+    protected void setInterval(String interval) {
+        // 'unmapped' is not a valid interval, so do not attempt to use it.
+        if (!interval.equals("unmapped")) {
+            changeArgument("-L", interval);
+        }
     }
 
     protected void addArgument(String flag, String value) {

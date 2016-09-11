@@ -29,13 +29,13 @@ public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<St
         String contig = contigTuple._1;
         File inputBam = contigTuple._2;
 
-        changeArgument("-L", contig);
-        changeArgument("-I", inputBam.getPath());
+        setInterval(contig);
+        setInputFile(inputBam.getPath());
 
         final String newFileName = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
 
         File outputBamFile = new File(newFileName);
-        changeArgument("-o", outputBamFile.getPath());
+        setOutputFile(outputBamFile.getPath());
 
         executeProgram();
         return outputBamFile;

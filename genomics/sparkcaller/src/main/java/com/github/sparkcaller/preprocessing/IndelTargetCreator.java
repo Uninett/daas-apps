@@ -26,11 +26,11 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
     }
 
     public File createTargets(File bamFile) throws Exception {
-        changeArgument("-I", bamFile.getPath());
+        setInputFile(bamFile.getPath());
 
         final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
-        changeArgument("-o", outputIntervalsFile.getPath());
+        setOutputFile(outputIntervalsFile.getPath());
 
         executeProgram();
         return Utils.moveToDir(outputIntervalsFile, this.outputFolder);
@@ -38,11 +38,11 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
 
     @Override
     public Tuple2<File, File> call(File bamFile) throws Exception {
-        changeArgument("-I", bamFile.getPath());
+        setInputFile(bamFile.getPath());
 
         final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
-        changeArgument("-o", outputIntervalsFile.getPath());
+        setOutputFile(outputIntervalsFile.getPath());
 
         executeProgram();
         return new Tuple2<>(bamFile, outputIntervalsFile);

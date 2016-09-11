@@ -30,13 +30,13 @@ public class BQSR extends BaseGATKProgram implements Function<Tuple2<String, Fil
         String contig = contigTuple._1;
         File inputBam = contigTuple._2;
 
-        changeArgument("-L", contig);
-        changeArgument("-I", inputBam.getPath());
+        setInterval(contig);
+        setInputFile(inputBam.getPath());
 
         String outputBamFilename = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-bqsr.bam";
         File outputBam = new File(outputBamFilename);
 
-        changeArgument("-o", outputBam.getPath());
+        setOutputFile(outputBam.getPath());
 
         executeProgram();
         return outputBam;
