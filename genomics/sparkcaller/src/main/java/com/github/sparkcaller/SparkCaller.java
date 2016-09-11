@@ -2,11 +2,13 @@ package com.github.sparkcaller;
 
 import com.github.sparkcaller.preprocessing.*;
 import com.github.sparkcaller.preprocessing.BAMIndexer;
+import com.github.sparkcaller.utils.FileMover;
+import com.github.sparkcaller.utils.SAMFileUtils;
+import com.github.sparkcaller.utils.Utils;
 import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
 import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
 import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
-import htsjdk.samtools.*;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;

@@ -1,4 +1,4 @@
-package com.github.sparkcaller;
+package com.github.sparkcaller.utils;
 
 import htsjdk.samtools.*;
 import picard.sam.MergeSamFiles;

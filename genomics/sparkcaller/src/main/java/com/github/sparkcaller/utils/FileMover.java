@@ -1,4 +1,4 @@
-package com.github.sparkcaller;
+package com.github.sparkcaller.utils;
 
 import org.apache.spark.api.java.function.Function;
 import java.io.File;

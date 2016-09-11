@@ -1,6 +1,6 @@
 package com.github.sparkcaller.variantdiscovery;
 
-import com.github.sparkcaller.BaseGATKProgram;
+import com.github.sparkcaller.utils.BaseGATKProgram;
 
 import java.io.File;
 import java.util.List;

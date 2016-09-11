@@ -1,7 +1,6 @@
 package com.github.sparkcaller.preprocessing;
 
-import com.github.sparkcaller.Utils;
-import org.apache.spark.api.java.function.Function;
+import com.github.sparkcaller.utils.Utils;
 import picard.sam.markduplicates.MarkDuplicates;
 
 import java.io.File;

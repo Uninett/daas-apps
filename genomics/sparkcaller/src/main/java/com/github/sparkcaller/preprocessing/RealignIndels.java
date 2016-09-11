@@ -1,13 +1,11 @@
 package com.github.sparkcaller.preprocessing;
 
-import com.github.sparkcaller.BaseGATKProgram;
-import com.github.sparkcaller.Utils;
+import com.github.sparkcaller.utils.BaseGATKProgram;
+import com.github.sparkcaller.utils.Utils;
 import org.apache.spark.api.java.function.Function;
-import org.broadinstitute.gatk.engine.CommandLineGATK;
 import scala.Tuple2;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /*
  * Realign the indels found by the IndelTargetCreator.

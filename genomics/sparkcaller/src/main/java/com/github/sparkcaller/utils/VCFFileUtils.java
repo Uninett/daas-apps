@@ -1,4 +1,4 @@
-package com.github.sparkcaller;
+package com.github.sparkcaller.utils;
 
 import picard.vcf.MergeVcfs;
 

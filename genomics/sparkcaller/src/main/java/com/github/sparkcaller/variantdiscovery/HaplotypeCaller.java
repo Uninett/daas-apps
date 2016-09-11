@@ -1,7 +1,7 @@
 package com.github.sparkcaller.variantdiscovery;
 
-import com.github.sparkcaller.BaseGATKProgram;
-import com.github.sparkcaller.Utils;
+import com.github.sparkcaller.utils.BaseGATKProgram;
+import com.github.sparkcaller.utils.Utils;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 

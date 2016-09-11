@@ -1,4 +1,4 @@
-package com.github.sparkcaller;
+package com.github.sparkcaller.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;

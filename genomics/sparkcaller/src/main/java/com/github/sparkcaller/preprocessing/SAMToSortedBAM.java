@@ -1,6 +1,6 @@
 package com.github.sparkcaller.preprocessing;
 
-import com.github.sparkcaller.Utils;
+import com.github.sparkcaller.utils.Utils;
 import org.apache.spark.api.java.function.Function;
 import picard.sam.SortSam;
 
