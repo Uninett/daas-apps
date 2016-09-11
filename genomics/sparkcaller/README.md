@@ -54,7 +54,7 @@ The script can be used in the following way:
 ```
 
 ### Configuration per tool
-It is possible to pass abitary arguments to each tool in the GATK toolkit.
+It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
 The input, reference, and output arguments are set automatically (KnownSites is
 also set in BQSR).
 
