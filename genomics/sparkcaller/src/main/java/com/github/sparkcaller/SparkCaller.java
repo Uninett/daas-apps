@@ -5,6 +5,7 @@ import com.github.sparkcaller.preprocessing.BAMIndexer;
 import com.github.sparkcaller.utils.FileMover;
 import com.github.sparkcaller.utils.SAMFileUtils;
 import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.VCFFileUtils;
 import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
 import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
@@ -200,8 +201,12 @@ public class SparkCaller {
     public File discoverVariants(File preprocessedBAMFile) throws IOException {
         this.log.info("Starting variant discovery!");
         this.log.info("Running HaplotypeCaller...");
-        List<File> variantsFiles = maybePerformHaplotypeCalling(preprocessedBAMFile);
-        if (variantsFiles != null) {
+        File variantsFile = maybePerformHaplotypeCalling(preprocessedBAMFile);
+
+        ArrayList<File> variantsFiles = new ArrayList<>();
+        variantsFiles.add(variantsFile);
+
+        if (variantsFile != null) {
             return maybePerformJointGenotyping(variantsFiles);
         } else {
             return null;
@@ -213,15 +218,17 @@ public class SparkCaller {
         return maybePerformJointGenotyping(variantsFiles);
     }
 
-    private List<File> maybePerformHaplotypeCalling(File preprocessedBAMFile) throws IOException {
+    private File maybePerformHaplotypeCalling(File preprocessedBAMFile) throws IOException {
         String haplotypeCallerExtraArgs = this.toolsExtraArgs.getProperty("HaplotypeCaller");
 
         if (haplotypeCallerExtraArgs != null) {
             JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(preprocessedBAMFile);
-            JavaRDD<File> variantsVCFFiles = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
+            JavaRDD<File> variantsVCFFilesRDD = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
                     haplotypeCallerExtraArgs,
                     this.coresPerNode));
-            return variantsVCFFiles.collect();
+            List<File> variantFiles = variantsVCFFilesRDD.map(new FileMover(this.outputFolder)).collect();
+            File mergedVcfs = VCFFileUtils.mergeVCFFiles(variantFiles, "merged-hap");
+            return Utils.moveToDir(mergedVcfs, this.outputFolder);
         }
 
         this.log.info("Skipping haplotype callijng! Args for HaplotypeCaller was not provided.");
