@@ -98,3 +98,6 @@ are valid:
 ### Recommended arguments
 See [this](https://software.broadinstitute.org/gatk/guide/article?id=1259) to
 see which arguments are recommended when running the VariantRecalibrator.
+
+### GCAT test results
+* [Illumini 100 bp pe exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
