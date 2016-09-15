@@ -1,6 +1,7 @@
 package com.github.sparkcaller.utils;
 
 import htsjdk.samtools.*;
+import picard.sam.AddOrReplaceReadGroups;
 import picard.sam.MergeSamFiles;
 import scala.Tuple2;
 
@@ -91,5 +92,23 @@ public class SAMFileUtils {
         contigMapper.values().forEach(SAMFileWriter::close);
 
         return Utils.moveFilesToDir(outputFiles, outputFolder);
+    }
+
+    public static File addOrReplaceRG(File inputFile, String args) {
+        AddOrReplaceReadGroups addOrReplaceReadGroupsEngine = new AddOrReplaceReadGroups();
+        File outputFile = new File(Utils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
+        ArrayList<String> extraArgs = Utils.possibleStringToArgs(args);
+
+
+        ArrayList<String> argsList = new ArrayList<>();
+        argsList.add("INPUT=" + inputFile.getPath());
+        argsList.add("OUTPUT=" + outputFile.getPath());
+
+        if (extraArgs != null) {
+            argsList.addAll(extraArgs);
+        }
+
+        addOrReplaceReadGroupsEngine.instanceMain(argsList.toArray(new String[0]));
+        return outputFile;
     }
 }

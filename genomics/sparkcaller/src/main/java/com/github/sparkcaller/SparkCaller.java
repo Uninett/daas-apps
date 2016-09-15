@@ -17,6 +17,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.log4j.Logger;
 
+import picard.sam.AddOrReplaceReadGroups;
 import scala.Tuple2;
 
 import java.io.File;
@@ -97,6 +98,20 @@ public class SparkCaller {
         return bamFile;
     }
 
+    public File maybeAddOrReplaceRG(File bamFile) throws Exception {
+        String addOrReplaceExtraArgs = this.toolsExtraArgs.getProperty("AddOrReplaceReadGroups");
+
+        if (addOrReplaceExtraArgs != null) {
+            this.log.info("Adding read groups...");
+            File bamWithRG = SAMFileUtils.addOrReplaceRG(bamFile, addOrReplaceExtraArgs);
+            BAMIndexer.indexBAM(bamWithRG);
+            return bamWithRG;
+        }
+
+        this.log.info("Skipping AddOrReplaceReadGroups! Args for AddOrReplaceReadGroups was not provided.");
+        return bamFile;
+    }
+
     /* Performs the preprocessing stage of the GATK pipeline.
      * This is performed in a simple scatter-gather manner.
      * See the following link for details: https://www.broadinstitute.org/gatk/guide/bp_step.php?p=1
@@ -109,8 +124,9 @@ public class SparkCaller {
         this.log.info("Preprocessing SAM files!");
         if (samFiles != null) {
             File mergedBAMFile = convertToSortedBAM(samFiles);
+            File BAMWithRG = maybeAddOrReplaceRG(mergedBAMFile);
 
-            File dedupedBAMFile = maybeMarkDuplicates(mergedBAMFile);
+            File dedupedBAMFile = maybeMarkDuplicates(BAMWithRG);
             File realignedBAMFile = maybeRealignIndels(dedupedBAMFile);
             File recalibratedBAMFile = maybePerformBQSR(realignedBAMFile);
 

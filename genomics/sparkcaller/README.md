@@ -84,6 +84,7 @@ as the key).
 The name which GATK uses for the tool is used as the key. The following keys
 are valid:
 
+* AddOrReplaceReadGroups
 * MarkDuplicates
 * RealignerTargetCreator
 * IndelRealigner
