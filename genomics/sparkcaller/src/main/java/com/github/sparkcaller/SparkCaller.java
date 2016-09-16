@@ -68,7 +68,6 @@ public class SparkCaller {
 
         try {
             File mergedFile = SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
-            BAMIndexer.indexBAM(mergedFile);
             return mergedFile;
         } catch (IOException e) {
             this.log.error("Could not merge files!");
@@ -100,7 +99,6 @@ public class SparkCaller {
         if (addOrReplaceExtraArgs != null) {
             this.log.info("Adding read groups...");
             File bamWithRG = SAMFileUtils.addOrReplaceRG(bamFile, addOrReplaceExtraArgs);
-            BAMIndexer.indexBAM(bamWithRG);
             return bamWithRG;
         }
 
@@ -163,10 +161,7 @@ public class SparkCaller {
     }
 
     private File mergeAndCreateIndex(List<File> inputBAMFiles, String outputFileName) throws Exception {
-        File mergedBAMFile = SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder, outputFileName);
-        BAMIndexer.indexBAM(mergedBAMFile);
-
-        return mergedBAMFile;
+        return SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder, outputFileName);
     }
 
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {

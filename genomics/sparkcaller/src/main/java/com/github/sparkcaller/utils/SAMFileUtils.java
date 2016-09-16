@@ -26,6 +26,7 @@ public class SAMFileUtils {
             MergeSamFiles samMerger = new MergeSamFiles();
             samMerger.USE_THREADING = true;
             samMerger.ASSUME_SORTED = true;
+            samMerger.CREATE_INDEX = true;
             ArrayList<String> args = new ArrayList<>();
 
             for (File samFile : samFiles) {
@@ -101,6 +102,7 @@ public class SAMFileUtils {
 
 
         ArrayList<String> argsList = new ArrayList<>();
+        argsList.add("CREATE_INDEX=true");
         argsList.add("INPUT=" + inputFile.getPath());
         argsList.add("OUTPUT=" + outputFile.getPath());
 
