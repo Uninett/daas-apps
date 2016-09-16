@@ -153,15 +153,11 @@ public class SparkCaller {
                     bqsrTargets.getPath(),
                     printReadsExtraArgs,
                     this.coresPerNode));
-            return mergeAndCreateIndex(recalibratedBAMFilesRDD.collect(), "merged-bqsr");
+            return  SAMFileUtils.mergeBAMFiles(recalibratedBAMFilesRDD.collect(), this.outputFolder, "merged-bqsr");
         }
 
         this.log.info("Skipping BQSR! Args for BaseRecalibrator or/and PrintReads was not provided.");
         return bamFile;
-    }
-
-    private File mergeAndCreateIndex(List<File> inputBAMFiles, String outputFileName) throws Exception {
-        return SAMFileUtils.mergeBAMFiles(inputBAMFiles, this.outputFolder, outputFileName);
     }
 
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
@@ -192,7 +188,7 @@ public class SparkCaller {
                     indelTargets,
                     indelRealignerExtraArgs));
 
-            return mergeAndCreateIndex(realignedIndels.collect(), "merged-realigned");
+            return SAMFileUtils.mergeBAMFiles(realignedIndels.collect(), this.outputFolder, "merged-realigned");
         }
 
         this.log.info("Skipping indel realignment! Args for RealingerTargetCreator and/or IndelRealinger was not provided.");
