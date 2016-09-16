@@ -87,11 +87,7 @@ public class SparkCaller {
 
         if (markDuplicatesExtraArgs != null) {
             this.log.info("Marking duplicates...");
-            DuplicateMarker duplicateMarker = new DuplicateMarker(this.outputFolder,
-                    markDuplicatesExtraArgs);
-            File dedupedBAMFile = duplicateMarker.markDuplicates(bamFile);
-            BAMIndexer.indexBAM(dedupedBAMFile);
-            return dedupedBAMFile;
+            return DuplicateMarker.markDuplicates(bamFile, this.outputFolder, markDuplicatesExtraArgs);
         }
 
         this.log.info("Skipping mark duplicates! Args for MarkDuplicates was not provided.");
