@@ -95,9 +95,9 @@ public class SAMFileUtils {
         return Utils.moveFilesToDir(outputFiles, outputFolder);
     }
 
-    public static File addOrReplaceRG(File inputFile, String args) {
+    public static File addOrReplaceRG(File inputFile, String outputFolder, String args) {
         AddOrReplaceReadGroups addOrReplaceReadGroupsEngine = new AddOrReplaceReadGroups();
-        File outputFile = new File(Utils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
+        File outputFile = new File(outputFolder, Utils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
         ArrayList<String> extraArgs = Utils.possibleStringToArgs(args);
 
 
