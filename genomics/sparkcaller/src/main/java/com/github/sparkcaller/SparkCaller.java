@@ -341,6 +341,8 @@ public class SparkCaller {
 
             } else if (inputFileFormat.equals("vcf")) {
                 vcfVariants = discoverVariants(inputFiles);
+            } else {
+                System.err.println("Invalid input format: " + inputFileFormat + "! Must be SAM, BAM or VCF!");
             };
         } catch (Exception e) {
             e.printStackTrace();
