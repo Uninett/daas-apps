@@ -184,7 +184,7 @@ public class SparkCaller {
         JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName);
         bamsByContigRDD.mapValues(new BAMIndexer()).collect();
 
-        return bamsByContigRDD;
+        return bamsByContigRDD.repartition(sparkContext.defaultParallelism());
     }
 
     public File maybeRealignIndels(File bamFile) throws Exception {
