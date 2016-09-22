@@ -12,6 +12,7 @@ import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
 import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -62,6 +63,18 @@ public class SparkCaller {
     public File convertToSortedBAM(ArrayList<File> samFiles) {
         this.log.info("Distributing the SAM files to the nodes...");
         JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
+    public SparkCaller(SparkContext sparkContext, String pathToReference, String knownSites,
+                       Properties toolsExtraArguments, String coresPerNode, String outputFolder) {
+
+        this.sparkContext = JavaSparkContext.fromSparkContext(sparkContext);
+        this.log = Logger.getLogger(this.getClass());
+
+        this.pathToReference = pathToReference;
+        this.toolsExtraArgs = toolsExtraArguments;
+        this.knownSites = knownSites;
+        this.coresPerNode = coresPerNode;
+        this.outputFolder = outputFolder;
+    }
 
         this.log.info("Converting the SAM files to sorted BAM files...");
         List<File> bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
