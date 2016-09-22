@@ -59,9 +59,6 @@ public class SparkCaller {
         this.outputFolder = outputFolder;
     }
 
-    public File convertToSortedBAM(ArrayList<File> samFiles) {
-        this.log.info("Distributing the SAM files to the nodes...");
-        JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
     public SparkCaller(SparkContext sparkContext, String pathToReference, String knownSites,
                        Properties toolsExtraArguments, String coresPerNode, String outputFolder) {
 
@@ -75,12 +72,22 @@ public class SparkCaller {
         this.outputFolder = outputFolder;
     }
 
-        this.log.info("Converting the SAM files to sorted BAM files...");
-        List<File> bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
+    public File maybeConvertToSortedBAM(ArrayList<File> samFiles) {
+        String sortSamExtraArgs = this.toolsExtraArgs.getProperty("SortSam");
+        List<File> bamFiles;
+
+        if (sortSamExtraArgs != null) {
+            this.log.info("Distributing the SAM files to the nodes...");
+            JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
+
+            this.log.info("Converting the SAM files to sorted BAM files...");
+            bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
+        }  else {
+            bamFiles = samFiles;
+        }
 
         try {
-            File mergedFile = SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
-            return mergedFile;
+            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
         } catch (IOException e) {
             this.log.error("Could not merge files!");
             e.printStackTrace();
@@ -110,7 +117,7 @@ public class SparkCaller {
 
         if (addOrReplaceExtraArgs != null) {
             this.log.info("Adding read groups...");
-            File bamWithRG = SAMFileUtils.addOrReplaceRG(bamFile, addOrReplaceExtraArgs);
+            File bamWithRG = SAMFileUtils.addOrReplaceRG(bamFile, this.outputFolder, addOrReplaceExtraArgs);
             return bamWithRG;
         }
 
@@ -129,7 +136,7 @@ public class SparkCaller {
 
         this.log.info("Preprocessing SAM files!");
         if (samFiles != null) {
-            File mergedBAMFile = convertToSortedBAM(samFiles);
+            File mergedBAMFile = maybeConvertToSortedBAM(samFiles);
             File BAMWithRG = maybeAddOrReplaceRG(mergedBAMFile);
 
             File dedupedBAMFile = maybeMarkDuplicates(BAMWithRG);
