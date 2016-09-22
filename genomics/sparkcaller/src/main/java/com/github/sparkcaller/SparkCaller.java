@@ -18,7 +18,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.log4j.Logger;
 
-import picard.sam.AddOrReplaceReadGroups;
 import scala.Tuple2;
 
 import java.io.File;
