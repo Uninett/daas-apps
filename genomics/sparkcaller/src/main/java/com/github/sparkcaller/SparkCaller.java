@@ -330,8 +330,7 @@ public class SparkCaller {
             ArrayList<File> inputFiles = Utils.getFilesInFolder(pathToInputFiles, inputFileFormat);
 
             if (inputFileFormat.equals("sam") || inputFileFormat.equals("bam")) {
-                File preprocessedBAMFile;
-                preprocessedBAMFile = preprocessSAMFiles(inputFiles);
+                File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
 
                 if (preprocessedBAMFile != null) {
                     vcfVariants = discoverVariants(preprocessedBAMFile);
