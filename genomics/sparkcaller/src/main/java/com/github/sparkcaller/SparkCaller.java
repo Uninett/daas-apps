@@ -23,6 +23,7 @@ import scala.Tuple2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -78,7 +79,7 @@ public class SparkCaller {
 
         if (sortSamExtraArgs != null) {
             this.log.info("Distributing the SAM files to the nodes...");
-            JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles);
+            JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles, samFiles.size());
 
             this.log.info("Converting the SAM files to sorted BAM files...");
             bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
@@ -181,10 +182,11 @@ public class SparkCaller {
 
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
         List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(inputBAMFile, this.outputFolder);
-        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName);
+        Collections.shuffle(bamsByContigWithName);
+        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName, bamsByContigWithName.size());
         bamsByContigRDD.mapValues(new BAMIndexer()).collect();
 
-        return bamsByContigRDD.repartition(sparkContext.defaultParallelism());
+        return bamsByContigRDD;
     }
 
     public File maybeRealignIndels(File bamFile) throws Exception {
