@@ -35,6 +35,7 @@ public class SparkCaller {
     private Properties toolsExtraArgs;
     private String coresPerNode;
     private String outputFolder;
+    private String driverCores;
 
     /*
      * The SparkCaller is used for managing the workflow
@@ -48,7 +49,7 @@ public class SparkCaller {
      *
      */
     public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String outputFolder) {
+                       Properties toolsExtraArguments, String coresPerNode, String driverCores, String outputFolder) {
 
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
@@ -57,11 +58,12 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
+        this.driverCores = driverCores;
         this.outputFolder = outputFolder;
     }
 
     public SparkCaller(SparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String outputFolder) {
+                       Properties toolsExtraArguments, String coresPerNode, String driverCores, String outputFolder) {
 
         this.sparkContext = JavaSparkContext.fromSparkContext(sparkContext);
         this.log = Logger.getLogger(this.getClass());
@@ -70,6 +72,7 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
+        this.driverCores = driverCores;
         this.outputFolder = outputFolder;
     }
 
@@ -162,7 +165,7 @@ public class SparkCaller {
                     this.knownSites,
                     this.outputFolder,
                     baseRecalibratorExtraArgs,
-                    this.coresPerNode);
+                    this.driverCores);
 
             File bqsrTargets = bqsrTargetGenerator.generateTargets(bamFile);
 
@@ -198,7 +201,7 @@ public class SparkCaller {
             IndelTargetCreator indelTargetCreator = new IndelTargetCreator(this.pathToReference,
                                                                            this.outputFolder,
                                                                            realignerTargetCreatorExtraArgs,
-                                                                           this.coresPerNode);
+                                                                           driverCores);
             File indelTargets = indelTargetCreator.createTargets(bamFile);
 
             this.log.info("Splitting BAMs by chromosome...");
@@ -421,9 +424,10 @@ public class SparkCaller {
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         String coresPerNode = cmdArgs.getOptionValue("CoresPerNode");
         Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
+        String driverCores = sparkContext.getConf().get("spark.driver.cores", coresPerNode);
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
-                                             toolsExtraArguments, coresPerNode, outputDirectory);
+                                             toolsExtraArguments, coresPerNode, driverCores, outputDirectory);
         caller.runPipeline(pathToSAMFiles, inputFormat);
         caller.log.info("Closing spark context!");
         sparkContext.stop();

@@ -19,9 +19,10 @@ import java.io.File;
 public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
     private String outputFolder;
 
-    public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String coresPerNode) {
+    public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String threads) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
+        setThreads(threads);
         this.outputFolder = outputFolder;
     }
 
