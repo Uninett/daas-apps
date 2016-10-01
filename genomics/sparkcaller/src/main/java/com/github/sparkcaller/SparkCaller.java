@@ -258,7 +258,7 @@ public class SparkCaller {
             return Utils.moveToDir(mergedVcfs, this.outputFolder);
         }
 
-        this.log.info("Skipping haplotype callijng! Args for HaplotypeCaller was not provided.");
+        this.log.info("Skipping haplotype calling! Args for HaplotypeCaller was not provided.");
         return null;
     }
 

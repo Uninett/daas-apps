@@ -68,7 +68,7 @@ public class SAMFileUtils {
                 currContig = "unmapped";
             }
 
-            // When the input is sorted, do not perform a loop up for every record.
+            // When the input is sorted, do not perform a look up for every record.
             if (!prevContig.equals(currContig)) {
                 currWriter = contigMapper.get(currContig);
             }
