@@ -53,16 +53,15 @@ public class SAMFileUtils {
     public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile, String outputFolder) throws IOException {
         SamReader samFile = SamReaderFactory.makeDefault().open(bamFile);
         SAMFileHeader samFileHeader = samFile.getFileHeader();
+
         HashMap<String, SAMFileWriter> contigMapper = new HashMap<>();
         SAMFileWriterFactory samWriterFactory =  new SAMFileWriterFactory();
 
-        SAMRecordIterator samIterator = samFile.iterator();
         String prevContig = "NONE";
         SAMFileWriter currWriter = null;
 
         List<Tuple2<String, File>> outputFiles = new ArrayList<>();
-        while(samIterator.hasNext()) {
-            SAMRecord record = samIterator.next();
+        for (final SAMRecord record : samFile) {
             String currContig = record.getContig();
 
             if (currContig == null) {
