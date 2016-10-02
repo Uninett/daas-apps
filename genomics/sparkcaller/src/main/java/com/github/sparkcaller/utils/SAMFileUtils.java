@@ -59,6 +59,7 @@ public class SAMFileUtils {
 
         String prevContig = "NONE";
         SAMFileWriter currWriter = null;
+        final String baseFileName = Utils.removeExtenstion(bamFile.getName(), "bam") + "-";
 
         List<Tuple2<String, File>> outputFiles = new ArrayList<>();
         for (final SAMRecord record : samFile) {
@@ -75,7 +76,7 @@ public class SAMFileUtils {
 
             // Create a new writer if a new contig was found.
             if (currWriter == null) {
-                String newSAMFilename = Utils.removeExtenstion(bamFile.getName(), "bam") + "-" + currContig + ".bam";
+                String newSAMFilename =  baseFileName + currContig + ".bam";
                 File newSAMFile = new File(newSAMFilename);
                 SAMFileWriter newWriter = samWriterFactory.makeSAMOrBAMWriter(samFileHeader, true, newSAMFile);
                 newWriter.addAlignment(record);
