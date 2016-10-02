@@ -13,6 +13,8 @@ import java.util.List;
 
 public class SAMFileUtils {
 
+    static final String UNMAPPED = "unmapped";
+
     public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName) throws IOException {
         File outputFile;
         if (samFiles.size() > 1) {
@@ -66,7 +68,7 @@ public class SAMFileUtils {
             String currContig = record.getContig();
 
             if (currContig == null) {
-                currContig = "unmapped";
+                currContig = UNMAPPED;
             }
 
             // When the input is sorted, do not perform a look up for every record.
