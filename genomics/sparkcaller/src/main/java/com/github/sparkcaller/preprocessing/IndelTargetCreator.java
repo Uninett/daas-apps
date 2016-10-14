@@ -22,7 +22,7 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
     public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String threads) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
-        setThreads(threads);
+        addArgument("-nt", threads);
         this.outputFolder = outputFolder;
     }
 
