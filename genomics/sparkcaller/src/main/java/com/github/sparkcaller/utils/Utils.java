@@ -88,4 +88,36 @@ public class Utils {
         String[] args = maybeString.split("\\s+");
         return new ArrayList<>(Arrays.asList(args));
     }
+
+    public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) {
+        String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
+
+        if (pathToUnpackedBinary == null) {
+            System.err.println("Could not find binary: " + binaryName);
+            return -1;
+        }
+
+        arguments.add(0, binaryName);
+        String[] cmdArray = arguments.toArray(new String[0]);
+
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(cmdArray);
+            p.waitFor();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -2;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return -3;
+        }
+
+        if (p.exitValue() != 0) {
+            System.err.println(binaryName + "exited with error code: " + p.exitValue());
+            System.err.println(p.getErrorStream());
+            return p.exitValue();
+        }
+
+        return 0;
+    }
 }
