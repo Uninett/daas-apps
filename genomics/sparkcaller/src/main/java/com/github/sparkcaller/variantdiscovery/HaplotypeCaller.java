@@ -21,7 +21,7 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<
 
         String outputFilename = Utils.removeExtenstion(inputBam.getPath(), "bam")  + ".vcf";
         setInterval(contig);
-        setInputFile(inputBam.getAbsolutePath());
+        setInputFile(inputBam.getPath());
         setOutputFile(outputFilename);
 
         executeProgram();
