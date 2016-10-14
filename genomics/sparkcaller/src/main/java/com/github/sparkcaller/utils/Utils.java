@@ -1,8 +1,6 @@
 package com.github.sparkcaller.utils;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
 import scala.Tuple2;
 
 import java.io.*;
