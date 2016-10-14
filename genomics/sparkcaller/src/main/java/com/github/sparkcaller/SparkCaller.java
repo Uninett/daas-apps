@@ -168,14 +168,13 @@ public class SparkCaller {
                     this.driverCores);
 
             File bqsrTargets = bqsrTargetGenerator.generateTargets(bamFile);
-
             JavaPairRDD<String, File> bamFilesRDD = splitByChromosomeAndCreateIndex(bamFile);
 
             this.log.info("Performing BQSR...");
             JavaRDD<File> recalibratedBAMFilesRDD = bamFilesRDD.map(new BQSR(this.pathToReference,
                     bqsrTargets.getPath(),
                     printReadsExtraArgs,
-                    this.coresPerNode));
+                    this.coresPerNode)).map(new FileMover(this.outputFolder));
             return  SAMFileUtils.mergeBAMFiles(recalibratedBAMFilesRDD.collect(), this.outputFolder, "merged-bqsr");
         }
 
