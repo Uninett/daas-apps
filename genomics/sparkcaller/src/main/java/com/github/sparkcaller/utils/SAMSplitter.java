@@ -9,9 +9,11 @@ import java.util.ArrayList;
 
 public class SAMSplitter implements PairFunction<Tuple2<String, File>, String, File> {
     private File inputFile;
+    private String coresPerNode;
 
-    public SAMSplitter(File inputFile) {
+    public SAMSplitter(File inputFile, String coresPerNode) {
         this.inputFile = inputFile;
+        this.coresPerNode = coresPerNode;
     }
 
     @Override
@@ -22,7 +24,7 @@ public class SAMSplitter implements PairFunction<Tuple2<String, File>, String, F
         ArrayList<String> arguments = new ArrayList<>();
         arguments.add("view");
         arguments.add("-@");
-        arguments.add("32");
+        arguments.add(this.coresPerNode);
         arguments.add("-o");
         arguments.add(outputFile.getPath());
         arguments.add(inputFile.getPath());

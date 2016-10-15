@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SAMFileUtils {
 
-    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName) throws Exception {
+    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName, String coresPerNode) throws Exception {
         File outputFile;
 
         if (samFiles.size() > 1) {
@@ -22,7 +22,7 @@ public class SAMFileUtils {
             ArrayList<String> args = new ArrayList<>();
             args.add("merge");
             args.add("-@");
-            args.add("32");
+            args.add(coresPerNode);
             args.add(outputFile.getPath());
 
             for (File samFile : samFiles) {

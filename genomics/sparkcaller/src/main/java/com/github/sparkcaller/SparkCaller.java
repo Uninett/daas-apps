@@ -89,7 +89,7 @@ public class SparkCaller {
         }
 
         try {
-            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted");
+            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted", this.coresPerNode);
         } catch (IOException e) {
             this.log.error("Could not merge files!");
             e.printStackTrace();
@@ -173,7 +173,7 @@ public class SparkCaller {
                     bqsrTargets.getPath(),
                     printReadsExtraArgs,
                     this.coresPerNode)).map(new FileMover(this.outputFolder));
-            return  SAMFileUtils.mergeBAMFiles(recalibratedBAMFilesRDD.collect(), this.outputFolder, "merged-bqsr");
+            return  SAMFileUtils.mergeBAMFiles(recalibratedBAMFilesRDD.collect(), this.outputFolder, "merged-bqsr", this.coresPerNode);
         }
 
         this.log.info("Skipping BQSR! Args for BaseRecalibrator or/and PrintReads was not provided.");
@@ -223,7 +223,7 @@ public class SparkCaller {
         }
 
         JavaPairRDD<String, File> bamsByContigWithName = this.sparkContext.parallelizePairs(contigsName, contigsName.size());
-        return bamsByContigWithName.partitionBy(new BinPartitioner(numPartitions, contigPartitionMapping)).mapToPair(new SAMSplitter(inputBAMFile)).mapValues(new BAMIndexer());
+        return bamsByContigWithName.partitionBy(new BinPartitioner(numPartitions, contigPartitionMapping)).mapToPair(new SAMSplitter(inputBAMFile, this.coresPerNode)).mapValues(new BAMIndexer());
     }
 
     public File maybeRealignIndels(File bamFile) throws Exception {
@@ -246,7 +246,7 @@ public class SparkCaller {
                     indelTargets,
                     indelRealignerExtraArgs)).map(new FileMover(this.outputFolder));
 
-            return SAMFileUtils.mergeBAMFiles(realignedIndels.collect(), this.outputFolder, "merged-realigned");
+            return SAMFileUtils.mergeBAMFiles(realignedIndels.collect(), this.outputFolder, "merged-realigned", this.coresPerNode);
         }
 
         this.log.info("Skipping indel realignment! Args for RealingerTargetCreator and/or IndelRealinger was not provided.");
