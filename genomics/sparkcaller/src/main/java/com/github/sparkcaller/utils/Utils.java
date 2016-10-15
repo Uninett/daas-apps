@@ -95,7 +95,7 @@ public class Utils {
             return -1;
         }
 
-        arguments.add(0, binaryName);
+        arguments.add(0, pathToUnpackedBinary);
         String[] cmdArray = arguments.toArray(new String[0]);
 
         Process p;
