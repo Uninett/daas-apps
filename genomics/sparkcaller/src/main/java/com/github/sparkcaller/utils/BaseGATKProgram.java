@@ -21,10 +21,18 @@ public class BaseGATKProgram implements Serializable {
     }
 
     protected void executeProgram() throws Exception {
-        try {
-            CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
-        } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
-            CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+        int numTries = 0;
+        int maxRetries = 5;
+
+        while (true) {
+            try {
+                CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+            } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
+                if (++numTries == maxRetries) {
+                    System.err.println("Failed to run GATK program " + maxRetries + " times!");
+                    return;
+                }
+            }
         }
     }
 
