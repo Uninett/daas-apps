@@ -28,7 +28,7 @@ public class SAMSplitter implements PairFunction<Tuple2<String, File>, String, F
         arguments.add(inputFile.getPath());
         arguments.add(sequenceName);
 
-        int statusCode = Utils.executeResourceBinary("samtools", arguments);
+        int statusCode = MiscUtils.executeResourceBinary("samtools", arguments);
 
         if (statusCode != 0) {
             System.err.println("Samtools returned status code: " + statusCode + " when attempting to view " + sequenceName);

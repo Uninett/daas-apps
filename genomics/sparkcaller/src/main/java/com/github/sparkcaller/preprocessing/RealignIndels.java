@@ -1,7 +1,7 @@
 package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.BaseGATKProgram;
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
@@ -30,7 +30,7 @@ public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<St
         setInterval(contig);
         setInputFile(inputBam.getPath());
 
-        final String newFileName = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
+        final String newFileName = MiscUtils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
 
         File outputBamFile = new File(newFileName);
         setOutputFile(outputBamFile.getPath());

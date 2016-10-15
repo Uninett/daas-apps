@@ -29,7 +29,7 @@ public class SAMFileUtils {
                 args.add(samFile.getPath());
             }
 
-            Utils.executeResourceBinary("samtools", args);
+            MiscUtils.executeResourceBinary("samtools", args);
 
             com.github.sparkcaller.preprocessing.BAMIndexer.indexBAM(outputFile);
         } else if (samFiles.size() != 0) {
@@ -45,8 +45,8 @@ public class SAMFileUtils {
 
     public static File addOrReplaceRG(File inputFile, String outputFolder, String args) {
         AddOrReplaceReadGroups addOrReplaceReadGroupsEngine = new AddOrReplaceReadGroups();
-        File outputFile = new File(outputFolder, Utils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
-        ArrayList<String> extraArgs = Utils.possibleStringToArgs(args);
+        File outputFile = new File(outputFolder, MiscUtils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
+        ArrayList<String> extraArgs = MiscUtils.possibleStringToArgs(args);
 
 
         ArrayList<String> argsList = new ArrayList<>();

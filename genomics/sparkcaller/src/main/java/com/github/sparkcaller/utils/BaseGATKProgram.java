@@ -10,7 +10,7 @@ public class BaseGATKProgram implements Serializable {
     private ArrayList<String> programArgs;
 
     public BaseGATKProgram(String toolkit, String extraArgsString) {
-        this.extraArgs = Utils.possibleStringToArgs(extraArgsString);
+        this.extraArgs = MiscUtils.possibleStringToArgs(extraArgsString);
         this.programArgs = new ArrayList<String>();
 
         addArgument("-T", toolkit);

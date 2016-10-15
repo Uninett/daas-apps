@@ -12,6 +12,6 @@ public class FileMover implements Function<File, File> {
 
     @Override
     public File call(File file) throws Exception {
-        return Utils.moveToDir(file, this.targetPath);
+        return MiscUtils.moveToDir(file, this.targetPath);
     }
 }

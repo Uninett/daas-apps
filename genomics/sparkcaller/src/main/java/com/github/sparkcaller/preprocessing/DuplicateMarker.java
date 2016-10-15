@@ -1,6 +1,6 @@
 package com.github.sparkcaller.preprocessing;
 
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 import picard.sam.markduplicates.MarkDuplicates;
 
 import java.io.File;
@@ -13,13 +13,13 @@ public class DuplicateMarker {
 
     public static File markDuplicates(File file, String outputFolder, String extraArgsString) throws Exception {
         MarkDuplicates markDuplicates = new MarkDuplicates();
-        ArrayList<String> extraArgs = Utils.possibleStringToArgs(extraArgsString);
+        ArrayList<String> extraArgs = MiscUtils.possibleStringToArgs(extraArgsString);
 
         ArrayList<String> markerArgs = new ArrayList<String>();
         markerArgs.add("INPUT=");
         markerArgs.add(file.getPath());
 
-        String newFileName = Utils.removeExtenstion(file.getPath(), "bam") + "-deduped.bam";
+        String newFileName = MiscUtils.removeExtenstion(file.getPath(), "bam") + "-deduped.bam";
         File outputBamFile = new File(newFileName);
 
         markerArgs.add("CREATE_INDEX=");
@@ -36,6 +36,6 @@ public class DuplicateMarker {
         }
 
         markDuplicates.instanceMain(markerArgs.toArray(new String[0]));
-        return Utils.moveToDir(outputBamFile, outputFolder);
+        return MiscUtils.moveToDir(outputBamFile, outputFolder);
     }
 }

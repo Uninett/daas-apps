@@ -1,7 +1,7 @@
 package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.BaseGATKProgram;
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 
 import java.io.File;
 
@@ -29,12 +29,12 @@ public class BQSRTargetGenerator extends BaseGATKProgram {
 
     public File generateTargets(File file) throws Exception {
         setInputFile(file.getPath());
-        String outputTableFilename = Utils.removeExtenstion(file.getPath(), "bam") + "-recal_data.table";
+        String outputTableFilename = MiscUtils.removeExtenstion(file.getPath(), "bam") + "-recal_data.table";
         File outputTable = new File(outputTableFilename);
 
         setOutputFile(outputTable.getPath());
 
         executeProgram();
-        return Utils.moveToDir(outputTable, this.outputFolder);
+        return MiscUtils.moveToDir(outputTable, this.outputFolder);
     }
 }

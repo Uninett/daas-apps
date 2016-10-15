@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
-public class Utils {
+public class MiscUtils {
     /*
     Get all the files in the folder 'pathToFolder' ending with 'fileExtension', and return them as an ArrayList.
     */

@@ -187,7 +187,7 @@ public class SparkCaller {
         SAMFileHeader samFileHeader = samFile.getFileHeader();
         List<SAMSequenceRecord> allContigs = samFileHeader.getSequenceDictionary().getSequences();
 
-        String baseContigFilename = Utils.removeExtenstion(inputBAMFile.getName(), "bam");
+        String baseContigFilename = MiscUtils.removeExtenstion(inputBAMFile.getName(), "bam");
 
         // Use the length of the contigs to determine which partition they should be in.
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
@@ -368,7 +368,7 @@ public class SparkCaller {
         File vcfVariants = null;
         try {
             inputFileFormat = inputFileFormat.toLowerCase();
-            ArrayList<File> inputFiles = Utils.getFilesInFolder(pathToInputFiles, inputFileFormat);
+            ArrayList<File> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles, inputFileFormat);
 
             if (inputFileFormat.equals("sam") || inputFileFormat.equals("bam")) {
                 File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
@@ -460,7 +460,7 @@ public class SparkCaller {
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         String coresPerNode = cmdArgs.getOptionValue("CoresPerNode");
-        Properties toolsExtraArguments = Utils.loadConfigFile(configFilepath);
+        Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
         String driverCores = sparkContext.getConf().get("spark.driver.cores", coresPerNode);
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,

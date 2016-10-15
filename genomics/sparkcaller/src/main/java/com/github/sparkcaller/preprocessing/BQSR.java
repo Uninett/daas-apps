@@ -1,7 +1,7 @@
 package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.BaseGATKProgram;
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
@@ -33,7 +33,7 @@ public class BQSR extends BaseGATKProgram implements Function<Tuple2<String, Fil
         setInterval(contig);
         setInputFile(inputBam.getPath());
 
-        String outputBamFilename = Utils.removeExtenstion(inputBam.getPath(), "bam") + "-bqsr.bam";
+        String outputBamFilename = MiscUtils.removeExtenstion(inputBam.getPath(), "bam") + "-bqsr.bam";
         File outputBam = new File(outputBamFilename);
 
         setOutputFile(outputBam.getPath());

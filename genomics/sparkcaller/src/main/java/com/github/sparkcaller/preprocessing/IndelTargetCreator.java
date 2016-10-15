@@ -1,7 +1,7 @@
 package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.BaseGATKProgram;
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
@@ -29,19 +29,19 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
     public File createTargets(File bamFile) throws Exception {
         setInputFile(bamFile.getPath());
 
-        final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
+        final String outputIntervalsFilename = MiscUtils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
         setOutputFile(outputIntervalsFile.getPath());
 
         executeProgram();
-        return Utils.moveToDir(outputIntervalsFile, this.outputFolder);
+        return MiscUtils.moveToDir(outputIntervalsFile, this.outputFolder);
     }
 
     @Override
     public Tuple2<File, File> call(File bamFile) throws Exception {
         setInputFile(bamFile.getPath());
 
-        final String outputIntervalsFilename = Utils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
+        final String outputIntervalsFilename = MiscUtils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
         setOutputFile(outputIntervalsFile.getPath());
 

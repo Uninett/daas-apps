@@ -1,6 +1,6 @@
 package com.github.sparkcaller.preprocessing;
 
-import com.github.sparkcaller.utils.Utils;
+import com.github.sparkcaller.utils.MiscUtils;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import org.apache.spark.api.java.function.Function;
@@ -14,7 +14,7 @@ public class BAMIndexer implements Function<File, File> {
                 .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS)
                 .open(bamFile);
 
-        File bamIndexFile = new File(Utils.removeExtenstion(bamFile.getPath(), "bam") + ".bai");
+        File bamIndexFile = new File(MiscUtils.removeExtenstion(bamFile.getPath(), "bam") + ".bai");
         if (bamIndexFile.exists()) {
             bamIndexFile.delete();
         }
