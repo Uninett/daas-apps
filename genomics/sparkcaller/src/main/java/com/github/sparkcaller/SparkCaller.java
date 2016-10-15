@@ -209,7 +209,7 @@ public class SparkCaller {
             this.log.info("Realigning indels...");
             JavaRDD<File> realignedIndels = bamsByContigRDD.map(new RealignIndels(this.pathToReference,
                     indelTargets,
-                    indelRealignerExtraArgs));
+                    indelRealignerExtraArgs)).map(new FileMover(this.outputFolder));
 
             return SAMFileUtils.mergeBAMFiles(realignedIndels.collect(), this.outputFolder, "merged-realigned");
         }
