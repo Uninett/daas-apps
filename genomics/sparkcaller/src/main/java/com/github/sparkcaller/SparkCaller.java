@@ -181,6 +181,7 @@ public class SparkCaller {
     }
 
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
+        this.log.info("Splitting BAM by chromosome...");
         // Get the list of all contigs, so that we can distribute the splitting to different nodes.
         SamReader samFile = SamReaderFactory.makeDefault().open(inputBAMFile);
         SAMFileHeader samFileHeader = samFile.getFileHeader();
@@ -280,6 +281,7 @@ public class SparkCaller {
         String haplotypeCallerExtraArgs = this.toolsExtraArgs.getProperty("HaplotypeCaller");
 
         if (haplotypeCallerExtraArgs != null) {
+            this.log.info("Running HaplotypeCaller...");
             JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(preprocessedBAMFile);
 
             JavaRDD<File> variantsVCFFilesRDD = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
