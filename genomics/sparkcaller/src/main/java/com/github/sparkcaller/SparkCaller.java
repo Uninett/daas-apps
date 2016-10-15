@@ -429,13 +429,15 @@ public class SparkCaller {
                                              toolsExtraArguments, coresPerNode, driverCores, outputDirectory);
         caller.runPipeline(pathToSAMFiles, inputFormat);
         caller.log.info("Closing spark context!");
+
         sparkContext.stop();
     }
 
     public static JavaSparkContext initSpark(String appName) {
         SparkConf conf = new SparkConf().setAppName(appName);
-        JavaSparkContext sparkContext = new JavaSparkContext(conf);
-
-        return sparkContext;
+        return new JavaSparkContext(conf);
     }
+
+
+
 }
