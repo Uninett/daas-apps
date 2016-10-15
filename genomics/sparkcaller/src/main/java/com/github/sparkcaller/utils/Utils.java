@@ -1,12 +1,9 @@
 package com.github.sparkcaller.utils;
 
 import org.apache.commons.io.FileUtils;
-import scala.Tuple2;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 public class Utils {
@@ -56,16 +53,6 @@ public class Utils {
         }
 
         return prop;
-    }
-
-    public static List<Tuple2<String, File>> moveFilesToDir(List<Tuple2<String, File>> files, String outputFolder) throws IOException {
-        List<Tuple2<String, File>> outputFiles = new ArrayList<>();
-        for (Tuple2<String, File> tuple : files) {
-            File newFile = Utils.moveToDir(tuple._2, outputFolder);
-            outputFiles.add(new Tuple2<>(tuple._1, newFile));
-        }
-
-        return outputFiles;
     }
 
     public static File moveToDir(File fileToCopy, String targetPath) throws IOException {
