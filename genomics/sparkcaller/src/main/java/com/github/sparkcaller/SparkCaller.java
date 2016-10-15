@@ -189,7 +189,6 @@ public class SparkCaller {
         String baseContigFilename = Utils.removeExtenstion(inputBAMFile.getName(), "bam");
 
         // Use the length of the contigs to determine which partition they should be in.
-        // We
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
         int numPartitions = (int) Math.ceil(allContigs.size() / 4);
         long[] contigLengthPartitions = new long[numPartitions];
