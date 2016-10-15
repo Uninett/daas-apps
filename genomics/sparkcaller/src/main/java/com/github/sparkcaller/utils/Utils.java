@@ -98,22 +98,29 @@ public class Utils {
         arguments.add(0, pathToUnpackedBinary);
         String[] cmdArray = arguments.toArray(new String[0]);
 
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec(cmdArray);
-            p.waitFor();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return -2;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return -3;
-        }
 
-        if (p.exitValue() != 0) {
-            System.err.println(binaryName + "exited with error code: " + p.exitValue());
-            System.err.println(p.getErrorStream());
-            return p.exitValue();
+        int numTries = 0;
+        int maxRetries = 5;
+
+        Process p;
+        while (true) {
+            try {
+                p = Runtime.getRuntime().exec(cmdArray);
+                p.waitFor();
+
+                if (p.exitValue() != 0) {
+                    System.err.println(binaryName + " exited with error code: " + p.exitValue());
+                    System.err.println(p.getErrorStream());
+                    return p.exitValue();
+                }
+                break;
+            } catch (IOException e) {
+                e.printStackTrace();
+                if (++numTries == maxRetries) return -2;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                if (++numTries == maxRetries) return -3;
+            }
         }
 
         return 0;
