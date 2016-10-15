@@ -1,45 +1,37 @@
 package com.github.sparkcaller.utils;
 
-import htsjdk.samtools.*;
 import picard.sam.AddOrReplaceReadGroups;
-import picard.sam.MergeSamFiles;
-import scala.Tuple2;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class SAMFileUtils {
 
-    static final String UNMAPPED = "unmapped";
-
-    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName) throws IOException {
+    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName) throws Exception {
         File outputFile;
-        if (samFiles.size() > 1) {
 
+        if (samFiles.size() > 1) {
             // Make sure that the output file has a proper file extension.
             if (!outputFileName.endsWith("bam")) {
                 outputFileName = outputFileName + ".bam";
             }
 
             outputFile = new File(outputPath, outputFileName);
-            MergeSamFiles samMerger = new MergeSamFiles();
-            samMerger.USE_THREADING = true;
-            samMerger.ASSUME_SORTED = true;
-            samMerger.CREATE_INDEX = true;
+
             ArrayList<String> args = new ArrayList<>();
+            args.add("merge");
+            args.add("-@");
+            args.add("32");
+            args.add(outputFile.getPath());
 
             for (File samFile : samFiles) {
-                args.add("I=");
                 args.add(samFile.getPath());
             }
 
-            args.add("O=");
-            args.add(outputFile.getPath());
+            Utils.executeResourceBinary("samtools", args);
 
-            samMerger.instanceMain(args.toArray(new String[0]));
+            com.github.sparkcaller.preprocessing.BAMIndexer.indexBAM(outputFile);
         } else if (samFiles.size() != 0) {
             outputFile = samFiles.get(0);
         } else {
