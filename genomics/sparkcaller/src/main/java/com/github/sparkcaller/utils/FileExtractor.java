@@ -26,7 +26,7 @@ public class FileExtractor {
             String fileName = chopped[chopped.length-1];
 
             // Create our temp file
-            File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName);
+            File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName, new File(""));
 
             // Delete the file on VM exit
             tempFile.deleteOnExit();
