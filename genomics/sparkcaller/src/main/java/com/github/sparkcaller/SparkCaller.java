@@ -203,6 +203,7 @@ public class SparkCaller {
             long currMin = -1;
             int currMinIndex = -1;
 
+            // Find the partition with the smallest total size
             for (int i = 0; i < contigLengthPartitions.length; i++) {
                 long partitionSize = contigLengthPartitions[i];
 
@@ -212,6 +213,7 @@ public class SparkCaller {
                 }
             }
 
+            // Place the contig in the partition which currently is the smallest
             contigLengthPartitions[currMinIndex] +=  contig.getSequenceLength();
             String sequenceName = contig.getSequenceName();
             contigPartitionMapping.put(sequenceName, currMinIndex);
