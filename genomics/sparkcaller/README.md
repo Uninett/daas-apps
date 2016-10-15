@@ -100,5 +100,38 @@ are valid:
 See [this](https://software.broadinstitute.org/gatk/guide/article?id=1259) to
 see which arguments are recommended when running the VariantRecalibrator.
 
+#### Arguments already specified by SparkCaller
+* RealignerTargetCreator:
+	* -nt
+	* -R
+	* -T
+	* -I
+	* -o
+* IndelRealigner:
+	* -R
+	* -targetIntervals
+	* -I
+	* -o
+	* -L
+* BaseRecalibrator
+	* -R
+	* -knownSites
+	* -nct
+	* -I
+	* -o
+* PrintReads
+	* -R
+	* -BQSR
+	* -nct
+	* -I
+	* -o
+	* -L
+* HaplotypeCaller
+	* -R
+	* -nct
+	* -I
+	* -o
+	* -L
+
 ### GCAT test results
 * [Illumini 100 bp pe exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
