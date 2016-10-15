@@ -3,8 +3,6 @@ By default SparkCaller is packaged with all the required dependencies (except
 Spark) into a single JAR file. All the dependencies are handled by Maven, and
 the package can be built using `mvn clean package`.
 
-A version of the JAR can be found [here](https://f.128.no/).
-
 ### Usage
 ```
 spark-submit                                      \
