@@ -41,52 +41,6 @@ public class SAMFileUtils {
         }
 
         return outputFile;
-
-    }
-
-    public static List<Tuple2<String, File>> splitBAMByChromosome(File bamFile, String outputFolder) throws IOException {
-        SamReader samFile = SamReaderFactory.makeDefault().open(bamFile);
-        SAMFileHeader samFileHeader = samFile.getFileHeader();
-
-        HashMap<String, SAMFileWriter> contigMapper = new HashMap<>();
-        SAMFileWriterFactory samWriterFactory =  new SAMFileWriterFactory();
-
-        String prevContig = "NONE";
-        SAMFileWriter currWriter = null;
-        final String baseFileName = Utils.removeExtenstion(bamFile.getName(), "bam") + "-";
-
-        List<Tuple2<String, File>> outputFiles = new ArrayList<>();
-        for (final SAMRecord record : samFile) {
-            String currContig = record.getContig();
-
-            if (currContig == null) {
-                currContig = UNMAPPED;
-            }
-
-            // When the input is sorted, do not perform a look up for every record.
-            if (!prevContig.equals(currContig)) {
-                currWriter = contigMapper.get(currContig);
-            }
-
-            // Create a new writer if a new contig was found.
-            if (currWriter == null) {
-                String newSAMFilename =  baseFileName + currContig + ".bam";
-                File newSAMFile = new File(newSAMFilename);
-                SAMFileWriter newWriter = samWriterFactory.makeSAMOrBAMWriter(samFileHeader, true, newSAMFile);
-                newWriter.addAlignment(record);
-                contigMapper.put(currContig, newWriter);
-
-                currWriter = newWriter;
-                outputFiles.add(new Tuple2<>(currContig, newSAMFile));
-            } else {
-                currWriter.addAlignment(record);
-            }
-
-            prevContig = currContig;
-        }
-        contigMapper.values().forEach(SAMFileWriter::close);
-
-        return Utils.moveFilesToDir(outputFiles, outputFolder);
     }
 
     public static File addOrReplaceRG(File inputFile, String outputFolder, String args) {

@@ -2,14 +2,15 @@ package com.github.sparkcaller;
 
 import com.github.sparkcaller.preprocessing.*;
 import com.github.sparkcaller.preprocessing.BAMIndexer;
-import com.github.sparkcaller.utils.FileMover;
-import com.github.sparkcaller.utils.SAMFileUtils;
-import com.github.sparkcaller.utils.Utils;
-import com.github.sparkcaller.utils.VCFFileUtils;
+import com.github.sparkcaller.utils.*;
 import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
 import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
 import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -22,10 +23,7 @@ import scala.Tuple2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class SparkCaller {
     final private JavaSparkContext sparkContext;
@@ -183,12 +181,47 @@ public class SparkCaller {
     }
 
     private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
-        List<Tuple2<String, File>> bamsByContigWithName = SAMFileUtils.splitBAMByChromosome(inputBAMFile, this.outputFolder);
-        Collections.shuffle(bamsByContigWithName);
-        JavaPairRDD<String, File> bamsByContigRDD = this.sparkContext.parallelizePairs(bamsByContigWithName, bamsByContigWithName.size());
-        bamsByContigRDD.mapValues(new BAMIndexer()).collect();
+        // Get the list of all contigs, so that we can distribute the splitting to different nodes.
+        SamReader samFile = SamReaderFactory.makeDefault().open(inputBAMFile);
+        SAMFileHeader samFileHeader = samFile.getFileHeader();
+        List<SAMSequenceRecord> allContigs = samFileHeader.getSequenceDictionary().getSequences();
 
-        return bamsByContigRDD;
+        String baseContigFilename = Utils.removeExtenstion(inputBAMFile.getName(), "bam");
+
+        // Use the length of the contigs to determine which partition they should be in.
+        // We
+        Map<String, Integer> contigPartitionMapping = new HashMap<>();
+        int numPartitions = (int) Math.ceil(allContigs.size() / 4);
+        long[] contigLengthPartitions = new long[numPartitions];
+
+        for (int i = 0; i < contigLengthPartitions.length; i++) {
+            contigLengthPartitions[i] = 0;
+        }
+
+        List<Tuple2<String, File>> contigsName = new ArrayList<>();
+        for (SAMSequenceRecord contig : allContigs) {
+            long currMin = -1;
+            int currMinIndex = -1;
+
+            for (int i = 0; i < contigLengthPartitions.length; i++) {
+                long partitionSize = contigLengthPartitions[i];
+
+                if (currMin == -1 || partitionSize < currMin) {
+                    currMin = partitionSize;
+                    currMinIndex = i;
+                }
+            }
+
+            contigLengthPartitions[currMinIndex] +=  contig.getSequenceLength();
+            String sequenceName = contig.getSequenceName();
+            contigPartitionMapping.put(sequenceName, currMinIndex);
+
+            String outputFilename = baseContigFilename + "-" + sequenceName + ".bam";
+            contigsName.add(new Tuple2<>(sequenceName, new File(outputFilename)));
+        }
+
+        JavaPairRDD<String, File> bamsByContigWithName = this.sparkContext.parallelizePairs(contigsName, contigsName.size());
+        return bamsByContigWithName.partitionBy(new BinPartitioner(numPartitions, contigPartitionMapping)).mapToPair(new SAMSplitter(inputBAMFile)).mapValues(new BAMIndexer());
     }
 
     public File maybeRealignIndels(File bamFile) throws Exception {
