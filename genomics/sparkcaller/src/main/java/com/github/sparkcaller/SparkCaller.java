@@ -282,6 +282,7 @@ public class SparkCaller {
 
         if (haplotypeCallerExtraArgs != null) {
             JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(preprocessedBAMFile);
+
             JavaRDD<File> variantsVCFFilesRDD = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
                     haplotypeCallerExtraArgs,
                     this.coresPerNode));
@@ -443,6 +444,7 @@ public class SparkCaller {
     }
 
     public static void main(String argv[]) throws Exception {
+
         Options options = SparkCaller.initCommandLineOptions();
         CommandLine cmdArgs = SparkCaller.parseCommandLineOptions(options, argv);
 
