@@ -8,7 +8,7 @@ import scala.Tuple2;
 import java.io.File;
 
 /*
- * Realign the indels found by the IndelTargetCreator.
+ * Realign the indels found by the RealignerTargetCreator.
  *
  * See:
  * https://www.broadinstitute.org/gatk/guide/article?id=38
