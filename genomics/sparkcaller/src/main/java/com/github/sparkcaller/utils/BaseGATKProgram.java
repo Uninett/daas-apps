@@ -27,6 +27,7 @@ public class BaseGATKProgram implements Serializable {
         while (true) {
             try {
                 CommandLineGATK.start(new CommandLineGATK(), this.programArgs.toArray(new String[0]));
+                return;
             } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
                 if (++numTries == maxRetries) {
                     System.err.println("Failed to run GATK program " + maxRetries + " times!");
