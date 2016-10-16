@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /*
- * Marks all the duplicate reads found in the input BAM file.
+ * Marks all the duplicate reads found in the input BAM file using Picard.
  */
 public class DuplicateMarker {
 
