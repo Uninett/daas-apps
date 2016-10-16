@@ -34,6 +34,7 @@ provided in the repo.
 The name which GATK uses for the tool is used as the key. The following keys
 are valid:
 
+* SortSam (currently does not accept extra arguments)
 * AddOrReplaceReadGroups
 * MarkDuplicates
 * RealignerTargetCreator
