@@ -35,8 +35,6 @@ as the result may be large.
 
 ### Configuration per tool
 It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
-The input, reference, and output arguments are set automatically (KnownSites is
-also set in BQSR).
 
 Keep in mind that the tools which are not present in the configuration file
 will be skipped.
@@ -57,36 +55,21 @@ are valid:
 * HaplotypeCaller
 
 #### Arguments already specified by SparkCaller
+The input, reference, and output arguments are set automatically for all tools.
 * RealignerTargetCreator:
 	* -nt
-	* -R
-	* -T
-	* -I
-	* -o
 * IndelRealigner:
-	* -R
 	* -targetIntervals
-	* -I
-	* -o
 	* -L
 * BaseRecalibrator
-	* -R
 	* -knownSites
 	* -nct
-	* -I
-	* -o
 * PrintReads
-	* -R
 	* -BQSR
 	* -nct
-	* -I
-	* -o
 	* -L
 * HaplotypeCaller
-	* -R
 	* -nct
-	* -I
-	* -o
 	* -L
 
 ### Usage
