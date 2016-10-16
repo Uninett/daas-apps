@@ -20,6 +20,58 @@ tasks to the nodes.
 ![SparkCaller pipeline](img/sparkcaller_pipeline.png "How the pipeline is run
 using the SparkCaller")
 
+### Configuration per tool
+It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
+The input, reference, and output arguments are set automatically (KnownSites is
+also set in BQSR).
+
+Keep in mind that the tools which are not present in the configuration file
+will be skipped.
+
+The name which GATK uses for the tool is used as the key. The following keys
+are valid:
+
+* AddOrReplaceReadGroups
+* MarkDuplicates
+* RealignerTargetCreator
+* IndelRealigner
+* BaseRecalibrator
+* PrintReads
+* HaplotypeCaller
+
+#### Arguments already specified by SparkCaller
+* RealignerTargetCreator:
+	* -nt
+	* -R
+	* -T
+	* -I
+	* -o
+* IndelRealigner:
+	* -R
+	* -targetIntervals
+	* -I
+	* -o
+	* -L
+* BaseRecalibrator
+	* -R
+	* -knownSites
+	* -nct
+	* -I
+	* -o
+* PrintReads
+	* -R
+	* -BQSR
+	* -nct
+	* -I
+	* -o
+	* -L
+* HaplotypeCaller
+	* -R
+	* -nct
+	* -I
+	* -o
+	* -L
+
 ### Usage
 ```
 spark-submit                                      \
@@ -67,58 +119,6 @@ The script can be used in the following way:
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
 -F sam
 ```
-
-### Configuration per tool
-It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
-The input, reference, and output arguments are set automatically (KnownSites is
-also set in BQSR).
-
-Keep in mind that the tools which are not present in the configuration file
-will be skipped. 
-
-The name which GATK uses for the tool is used as the key. The following keys
-are valid:
-
-* AddOrReplaceReadGroups
-* MarkDuplicates
-* RealignerTargetCreator
-* IndelRealigner
-* BaseRecalibrator
-* PrintReads
-* HaplotypeCaller
-
-#### Arguments already specified by SparkCaller
-* RealignerTargetCreator:
-	* -nt
-	* -R
-	* -T
-	* -I
-	* -o
-* IndelRealigner:
-	* -R
-	* -targetIntervals
-	* -I
-	* -o
-	* -L
-* BaseRecalibrator
-	* -R
-	* -knownSites
-	* -nct
-	* -I
-	* -o
-* PrintReads
-	* -R
-	* -BQSR
-	* -nct
-	* -I
-	* -o
-	* -L
-* HaplotypeCaller
-	* -R
-	* -nct
-	* -I
-	* -o
-	* -L
 
 ### GCAT test results
 * [Illumini 100 bp pe exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
