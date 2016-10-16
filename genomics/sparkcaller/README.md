@@ -9,6 +9,14 @@ The following dependencies are required, but not provided inside the JAR:
 * scala-library 2.11.8
 
 ### How it works
+The SparkCaller exploits the fact that several commonly used tools in the GATK
+pipeline can be used on each chromosome. The tools that are scatter-gatherable
+in this manner is mentioned in [the GATK parallelism
+guide](http://gatkforums.broadinstitute.org/dsde/discussion/1975/how-can-i-use-parallelism-to-make-gatk-tools-run-faster).
+PrintReads can also be scatter-gathered if BaseRecalibrator is *not* used per
+chromosome. [Apache Spark](http://spark.apache.org/) is used to distribute the
+tasks to the nodes.
+
 ![SparkCaller pipeline](img/sparkcaller_pipeline.png "How the pipeline is run
 using the SparkCaller")
 
