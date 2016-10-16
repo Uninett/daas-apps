@@ -25,7 +25,7 @@ sparkcaller-1.0.jar                               \
 -R <Path to reference file>                       \
 -I <Path to the folder containing the SAM files>  \
 -S <Path to known sites>
--F <The fileformat which to use as input (BAM|SAM|VCF)
+-F <The fileformat which to use as input (BAM|SAM)
 ```
 
 Ex.
