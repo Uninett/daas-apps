@@ -3,10 +3,7 @@ package com.github.sparkcaller;
 import com.github.sparkcaller.preprocessing.*;
 import com.github.sparkcaller.preprocessing.BAMIndexer;
 import com.github.sparkcaller.utils.*;
-import com.github.sparkcaller.variantdiscovery.GenotypeGVCF;
 import com.github.sparkcaller.variantdiscovery.HaplotypeCaller;
-import com.github.sparkcaller.variantdiscovery.VQSRRecalibrationApplier;
-import com.github.sparkcaller.variantdiscovery.VQSRTargetCreator;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
@@ -261,22 +258,7 @@ public class SparkCaller {
     */
     public File discoverVariants(File preprocessedBAMFile) throws IOException {
         this.log.info("Starting variant discovery!");
-        this.log.info("Running HaplotypeCaller...");
-        File variantsFile = maybePerformHaplotypeCalling(preprocessedBAMFile);
-
-        ArrayList<File> variantsFiles = new ArrayList<>();
-        variantsFiles.add(variantsFile);
-
-        if (variantsFile != null) {
-            return maybePerformJointGenotyping(variantsFiles);
-        } else {
-            return null;
-        }
-    }
-
-    public File discoverVariants(List<File> variantsFiles) throws IOException {
-        this.log.info("Starting variant discovery!");
-        return maybePerformJointGenotyping(variantsFiles);
+        return maybePerformHaplotypeCalling(preprocessedBAMFile);
     }
 
     private File maybePerformHaplotypeCalling(File preprocessedBAMFile) throws IOException {
@@ -291,70 +273,11 @@ public class SparkCaller {
                     this.coresPerNode));
             List<File> variantFiles = variantsVCFFilesRDD.map(new FileMover(this.outputFolder)).collect();
             File mergedVcfs = VCFFileUtils.mergeVCFFiles(variantFiles, "merged-hap");
-            return Utils.moveToDir(mergedVcfs, this.outputFolder);
+            return MiscUtils.moveToDir(mergedVcfs, this.outputFolder);
         }
 
         this.log.info("Skipping haplotype calling! Args for HaplotypeCaller was not provided.");
         return null;
-    }
-
-    private File maybePerformJointGenotyping(List<File> variantFiles) {
-        String extraArgs = this.toolsExtraArgs.getProperty("GenotypeGVCFs");
-
-        if (extraArgs != null) {
-            this.log.info("Performing joint genotyping...");
-            GenotypeGVCF genotypeGVCF = new GenotypeGVCF(this.pathToReference,
-                    extraArgs,
-                    this.coresPerNode);
-            try {
-                File outputFile = new File(this.outputFolder, "merged.vcf");
-                File mergedVariants = genotypeGVCF.performJointGenotyping(variantFiles, outputFile.getPath());
-
-                this.log.info("Recalibrating variants...");
-                File recalibratedVariants = recalibrateVariants(mergedVariants);
-
-                return Utils.moveToDir(recalibratedVariants, this.outputFolder);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    private File maybePerformVariantTargetCreation(File vcfToRecalibrate, String extraArgs, String mode) throws Exception {
-        if (extraArgs != null) {
-            VQSRRecalibrationApplier vqsrApplier = new VQSRRecalibrationApplier(this.pathToReference,
-                    this.toolsExtraArgs.getProperty("ApplyRecalibration"),
-                    this.coresPerNode);
-
-            VQSRTargetCreator targetCreator = new VQSRTargetCreator(this.pathToReference, extraArgs, this.coresPerNode);
-            Tuple2<File, File> snpTargets = targetCreator.createTargets(vcfToRecalibrate, mode);
-
-            return vqsrApplier.applyRecalibration(vcfToRecalibrate, snpTargets, mode);
-        } else {
-            return vcfToRecalibrate;
-        }
-
-    }
-
-    private File recalibrateVariants(File vcfToRecalibrate) {
-        String INDELextraArgs = this.toolsExtraArgs.getProperty("INDELVariantRecalibrator");
-        String SNPextraArgs = this.toolsExtraArgs.getProperty("SNPVariantRecalibrator");
-
-        try {
-            vcfToRecalibrate = maybePerformVariantTargetCreation(vcfToRecalibrate, SNPextraArgs, "SNP");
-            vcfToRecalibrate = maybePerformVariantTargetCreation(vcfToRecalibrate, INDELextraArgs, "INDEL");
-
-            return vcfToRecalibrate;
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-
-            return null;
-        }
     }
 
     /*
@@ -379,9 +302,6 @@ public class SparkCaller {
                     System.err.println("Could not preprocess SAM files!");
                     System.exit(1);
                 }
-
-            } else if (inputFileFormat.equals("vcf")) {
-                vcfVariants = discoverVariants(inputFiles);
             } else {
                 System.err.println("Invalid input format: " + inputFileFormat + "! Must be SAM, BAM or VCF!");
             };

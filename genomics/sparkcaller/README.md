@@ -59,26 +59,6 @@ also set in BQSR).
 Keep in mind that the tools which are not present in the configuration file
 will be skipped. 
 
-The config uses the normal Java property format. The VariantRecalibrator can
-for example be configured in the following way:
-```
-SNPVariantRecalibrator = -resource:hapmap,known=false,training=true,truth=true,prior=15.0 PATH_TO/hapmap_3.3.hg19.sites.vcf \
-                         -resource:omni,known=false,training=true,truth=false,prior=12.0 PATH_TO/1000G_omni2.5.hg19.sites.vcf \
-                         -resource:1000G,known=false,training=true,truth=false,prior=10.0 PATH_TO/1000G_phase1.snps.high_confidence.hg19.sites.vcf \
-                         -resource:dbsnp,known=true,training=false,truth=false,prior=2.0 PATH_TO/dbsnp_138.hg19.vcf \
-                         --variant_index_type LINEAR --variant_index_parameter 128000 \
-                         -an MQRankSum \
-                         -an ReadPosRankSum \
-                         -an BaseQRankSum \
-                         --maxGaussians 4 \
-                         -minNumBad 7500 \
-
-```
-
-In order to run both INDEL and SNP recalibrator, add a similar line to what is
-added for SNPVariantRecalibrator (except that INDELVariantRecalibrator is used
-as the key).
-
 The name which GATK uses for the tool is used as the key. The following keys
 are valid:
 
@@ -89,14 +69,6 @@ are valid:
 * BaseRecalibrator
 * PrintReads
 * HaplotypeCaller
-* GenotypeGVCFs
-* SNPVariantRecalibrator
-* INDELVariantRecalibrator
-* ApplyRecalibration
-
-### Recommended arguments
-See [this](https://software.broadinstitute.org/gatk/guide/article?id=1259) to
-see which arguments are recommended when running the VariantRecalibrator.
 
 #### Arguments already specified by SparkCaller
 * RealignerTargetCreator:
