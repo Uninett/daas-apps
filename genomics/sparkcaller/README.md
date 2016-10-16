@@ -28,6 +28,9 @@ also set in BQSR).
 Keep in mind that the tools which are not present in the configuration file
 will be skipped.
 
+An example of a configuration file where the entire pipeline is executed, is
+provided in the repo.
+
 The name which GATK uses for the tool is used as the key. The following keys
 are valid:
 
