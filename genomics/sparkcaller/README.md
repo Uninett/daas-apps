@@ -3,6 +3,11 @@ By default SparkCaller is packaged with all the required dependencies (except
 Spark and Scala) into a single JAR file. All the dependencies are handled by Maven, and
 the package can be built using `mvn clean package`.
 
+#### Dependencies
+The following dependencies are required, but not provided inside the JAR:
+* spark-core_2.11
+* scala-library 2.11.8
+
 ### How it works
 ![SparkCaller pipeline](img/sparkcaller_pipeline.png "How the pipeline is run
 using the SparkCaller")
