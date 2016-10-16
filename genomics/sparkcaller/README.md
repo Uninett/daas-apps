@@ -20,6 +20,19 @@ tasks to the nodes.
 ![SparkCaller pipeline](img/sparkcaller_pipeline.png "How the pipeline is run
 using the SparkCaller")
 
+### Recommended Spark settings
+By default `spark.task.cpus` is set to one, which means that one core is
+allocated per task. This causes Spark to spawn many tasks on the same worker,
+which is not ideal when using the GATK tools.
+It is thus recommended to set `spark.task.cpus` so that each worker at most has
+four active tasks at a time.
+
+SparkCaller uses the driver when merging BAM and VCF files, it is thus also
+recommended to allocate up to 32 cores to the driver node.
+
+It is also recommended to set `spark.driver.maxResultSize` to something high,
+as the result may be large.
+
 ### Configuration per tool
 It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
 The input, reference, and output arguments are set automatically (KnownSites is
