@@ -27,7 +27,7 @@ recommended to allocate up to 32 cores to the driver node.
 It is also recommended to set `spark.driver.maxResultSize` to something high,
 as the result may be large.
 
-`spark.executor.cores``and `spark.driver.cores` can, respectively, be used to
+`spark.executor.cores` and `spark.driver.cores` can, respectively, be used to
 set how many cores to use per tool when distributed to workers, and how many
 cores to use for sequential work (such as merging).
 
