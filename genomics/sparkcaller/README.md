@@ -21,12 +21,6 @@ tasks to the nodes.
 using the SparkCaller")
 
 ### Recommended Spark settings
-By default `spark.task.cpus` is set to one, which means that one core is
-allocated per task. This causes Spark to spawn many tasks on the same worker,
-which is not ideal when using the GATK tools.
-It is thus recommended to set `spark.task.cpus` so that each worker at most has
-four active tasks at a time.
-
 SparkCaller uses the driver when merging BAM and VCF files, it is thus also
 recommended to allocate up to 32 cores to the driver node.
 
@@ -39,7 +33,10 @@ cores to use for sequential work (such as merging).
 
 `spark.task.cpus` can be used to set how many cores to use per task. It is
 recommended, based on experiments, to set this to about 1/2 of
-`spark.executor.cores`, but this varies with the dataset.
+`spark.executor.cores`, but this varies with the dataset. At most four tasks
+should be active at each worker at a time, as otherwise the tasks quickly will
+begin to interfer with each other when many GATK tools are run on the same
+worker.
 
 
 ### Configuration per tool
