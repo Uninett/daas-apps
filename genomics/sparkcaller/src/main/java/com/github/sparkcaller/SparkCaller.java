@@ -187,8 +187,11 @@ public class SparkCaller {
         String baseContigFilename = MiscUtils.removeExtenstion(inputBAMFile.getName(), "bam");
 
         // Use the length of the contigs to determine which partition they should be in.
+        final int coresPerTask = this.sparkContext.getConf().getInt("spark.task.cpus", 1);
+        final int contigsPerPartition = Integer.parseInt(this.coresPerNode) / coresPerTask;
+        
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
-        int numPartitions = (int) Math.ceil(allContigs.size() / 4);
+        int numPartitions = (int) Math.ceil(allContigs.size() / contigsPerPartition);
         long[] contigLengthPartitions = new long[numPartitions];
 
         for (int i = 0; i < contigLengthPartitions.length; i++) {
