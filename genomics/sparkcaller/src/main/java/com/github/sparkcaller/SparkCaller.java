@@ -339,10 +339,6 @@ public class SparkCaller {
         configFile.setRequired(true);
         options.addOption(configFile);
 
-        Option threads = new Option("CPN", "CoresPerNode", true, "The number of available cores per node.");
-        threads.setRequired(true);
-        options.addOption(threads);
-
         return options;
     }
 
@@ -379,9 +375,24 @@ public class SparkCaller {
         String outputDirectory = cmdArgs.getOptionValue("OutputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
-        String coresPerNode = cmdArgs.getOptionValue("CoresPerNode");
         Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
-        String driverCores = sparkContext.getConf().get("spark.driver.cores", coresPerNode);
+
+        String driverCores = sparkContext.getConf().get("spark.driver.cores");
+        String coresPerNode = sparkContext.getConf().get("spark.executor.cores");
+
+        if (driverCores == null) {
+            System.err.println("The spark.driver.cores setting is not set!");
+            System.err.println("spark.driver.cores is required to determine how many cores to use on sequential tasks.");
+            System.err.println("Exiting!");
+            System.exit(1);
+        }
+
+        if (coresPerNode == null) {
+            System.err.println("The spark.executor.cores setting is not set!");
+            System.err.println("spark.executor.cores is required to determine how many cores to use when distributing tasks.");
+            System.err.println("Exiting!");
+            System.exit(1);
+        }
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
                                              toolsExtraArguments, coresPerNode, driverCores, outputDirectory);

@@ -79,7 +79,6 @@ spark-submit                                      \
 --executor-memory <RAM per executor>              \
 --driver-memory  <driver RAM>                     \
 sparkcaller-1.0.jar                               \
--CPN <Cores per node>                             \
 -O <Output folder>                                \
 -C <Path to config file>                          \
 -R <Path to reference file>                       \
@@ -95,7 +94,6 @@ spark-submit                                      \
 --executor-memory 16G                             \
 --driver-memory  6G                               \
 sparkcaller-1.0.jar                               \
--CPN 4                                            \
 -O /data/hdfs/sparkcaller/                        \
 -C sparkcaller.properties                         \
 -R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
@@ -111,7 +109,6 @@ The script can be used in the following way:
 
 ```
 ./submit-sparkcaller.sh                           \
--CPN 4                                            \
 -O /data/hdfs/sparkcaller/                        \
 -C sparkcaller.properties                         \
 -R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
