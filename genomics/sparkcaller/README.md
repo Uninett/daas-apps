@@ -117,5 +117,10 @@ The script can be used in the following way:
 -F sam
 ```
 
+### Useful data
+Some useful data, such as the dbSNP and reference files, can be find at the [GSA
+public FTP
+server](http://gatkforums.broadinstitute.org/gatk/discussion/1215/how-can-i-access-the-gsa-public-ftp-server).
+
 ### GCAT test results
 * [Illumini 100 bp pe exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
