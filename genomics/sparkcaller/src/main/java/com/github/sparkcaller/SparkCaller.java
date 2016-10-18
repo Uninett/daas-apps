@@ -189,7 +189,7 @@ public class SparkCaller {
         // Use the length of the contigs to determine which partition they should be in.
         final int coresPerTask = this.sparkContext.getConf().getInt("spark.task.cpus", 1);
         final int contigsPerPartition = Integer.parseInt(this.coresPerNode) / coresPerTask;
-        
+
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
         int numPartitions = (int) Math.ceil(allContigs.size() / contigsPerPartition);
         long[] contigLengthPartitions = new long[numPartitions];
@@ -294,20 +294,16 @@ public class SparkCaller {
         File vcfVariants = null;
         try {
             inputFileFormat = inputFileFormat.toLowerCase();
-            ArrayList<File> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles, inputFileFormat);
+            ArrayList<File> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles);
 
-            if (inputFileFormat.equals("sam") || inputFileFormat.equals("bam")) {
-                File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
+            File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
 
-                if (preprocessedBAMFile != null) {
-                    vcfVariants = discoverVariants(preprocessedBAMFile);
-                } else {
-                    System.err.println("Could not preprocess SAM files!");
-                    System.exit(1);
-                }
+            if (preprocessedBAMFile != null) {
+                vcfVariants = discoverVariants(preprocessedBAMFile);
             } else {
-                System.err.println("Invalid input format: " + inputFileFormat + "! Must be SAM, BAM or VCF!");
-            };
+                System.err.println("Could not preprocess SAM files!");
+                System.exit(1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -325,10 +321,6 @@ public class SparkCaller {
         Option inputFolder = new Option("I", "InputFolder", true, "The path to the folder containing the input files.");
         inputFolder.setRequired(true);
         options.addOption(inputFolder);
-
-        Option inputFormat = new Option("F", "InputFormat", true, "The input fileformat (SAM or BAM).");
-        inputFormat.setRequired(true);
-        options.addOption(inputFormat);
 
         Option outputFolder = new Option("O", "OutputFolder", true, "The path to the folder which will store the final output files.");
         outputFolder.setRequired(true);

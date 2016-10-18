@@ -8,9 +8,9 @@ import java.util.Properties;
 
 public class MiscUtils {
     /*
-    Get all the files in the folder 'pathToFolder' ending with 'fileExtension', and return them as an ArrayList.
+    Get all the SAM/BAM files in the folder 'pathToFolder', and return them as an ArrayList.
     */
-    public static ArrayList<File> getFilesInFolder(String pathToFolder, String fileExtension) {
+    public static ArrayList<File> getFilesInFolder(String pathToFolder) {
         File folder = new File(pathToFolder);
         File[] listOfFiles = folder.listFiles();
 
@@ -18,7 +18,7 @@ public class MiscUtils {
             ArrayList<File> bamFiles = new ArrayList<File>();
 
             for (File file : listOfFiles) {
-                if (file.isFile() && file.getName().endsWith(fileExtension)) {
+                if (file.isFile() && (file.getName().endsWith("sam") || file.getName().endsWith("bam"))) {
                     bamFiles.add(file);
                 }
             }

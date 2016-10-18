@@ -90,7 +90,6 @@ sparkcaller-1.0.jar                               \
 -R <Path to reference file>                       \
 -I <Path to the folder containing the SAM files>  \
 -S <Path to known sites>
--F <The fileformat which to use as input (BAM|SAM)
 ```
 
 Ex.
@@ -105,7 +104,6 @@ sparkcaller-1.0.jar                               \
 -R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
 -I /data/hdfs/sparkcaller/sams/                   \
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
--F sam
 ```
 
 You can also use the sh script `submit-sparkcaller.sh` to start the job.
@@ -120,7 +118,6 @@ The script can be used in the following way:
 -R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
 -I /data/hdfs/sparkcaller/sams/                   \
 -S /data/hdfs/1000genomes/dbsnp/human/dbsnp_138.hg19.vcf
--F sam
 ```
 
 ### Useful data
