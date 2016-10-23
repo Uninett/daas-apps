@@ -1,3 +1,12 @@
+#### Table of Contents
+* *[How to build](#how-to-build-this-project)*
+* *[Dependencies](#dependencies)*
+* *[How it works](#how-it-works)*
+* *[Recommended Spark settings](#recommended-spark-settings)*
+* *[Configuration per tool](#configuration-per-tool)*
+* *[Arguments already specified by SparkCaller](#arguments-already-specified-by-sparkcaller)*
+* *[Usage](#usage)*
+
 ### How to build this project
 By default SparkCaller is packaged with all the required dependencies (except
 Spark and Scala) into a single JAR file. All the dependencies are handled by Maven, and
