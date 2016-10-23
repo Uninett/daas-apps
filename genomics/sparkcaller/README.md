@@ -1,21 +1,11 @@
 #### Table of Contents
-* *[How to build](#how-to-build-this-project)*
-* *[Dependencies](#dependencies)*
 * *[How it works](#how-it-works)*
-* *[Recommended Spark settings](#recommended-spark-settings)*
 * *[Configuration per tool](#configuration-per-tool)*
 * *[Arguments already specified by SparkCaller](#arguments-already-specified-by-sparkcaller)*
 * *[Usage](#usage)*
-
-### How to build this project
-By default SparkCaller is packaged with all the required dependencies (except
-Spark and Scala) into a single JAR file. All the dependencies are handled by Maven, and
-the package can be built using `mvn clean package`.
-
-#### Dependencies
-The following dependencies are required, but not provided inside the JAR:
-* spark-core_2.11
-* scala-library 2.11.8
+* *[Recommended Spark settings](#recommended-spark-settings)*
+* *[How to build](#how-to-build-this-project)*
+* *[Dependencies](#dependencies)*
 
 ### How it works
 The SparkCaller exploits the fact that several commonly used tools in the GATK
@@ -28,25 +18,6 @@ tasks to the nodes.
 
 ![SparkCaller pipeline](img/sparkcaller_pipeline.png "How the pipeline is run
 using the SparkCaller")
-
-### Recommended Spark settings
-SparkCaller uses the driver when merging BAM and VCF files, it is thus also
-recommended to allocate up to 32 cores to the driver node.
-
-It is also recommended to set `spark.driver.maxResultSize` to something high,
-as the result may be large.
-
-`spark.executor.cores` and `spark.driver.cores` can, respectively, be used to
-set how many cores to use per tool when distributed to workers, and how many
-cores to use for sequential work (such as merging).
-
-`spark.task.cpus` can be used to set how many cores to use per task. It is
-recommended, based on experiments, to set this to about 1/2 of
-`spark.executor.cores`, but this varies with the dataset. At most four tasks
-should be active at each worker at a time, as otherwise the tasks quickly will
-begin to interfer with each other when many GATK tools are run on the same
-worker.
-
 
 ### Configuration per tool
 It is possible to pass arbitrary arguments to each tool in the GATK toolkit.
@@ -133,6 +104,34 @@ The script can be used in the following way:
 Some useful data, such as the dbSNP and reference files, can be find at the [GSA
 public FTP
 server](http://gatkforums.broadinstitute.org/gatk/discussion/1215/how-can-i-access-the-gsa-public-ftp-server).
+
+### Recommended Spark settings
+SparkCaller uses the driver when merging BAM and VCF files, it is thus also
+recommended to allocate up to 32 cores to the driver node.
+
+It is also recommended to set `spark.driver.maxResultSize` to something high,
+as the result may be large.
+
+`spark.executor.cores` and `spark.driver.cores` can, respectively, be used to
+set how many cores to use per tool when distributed to workers, and how many
+cores to use for sequential work (such as merging).
+
+`spark.task.cpus` can be used to set how many cores to use per task. It is
+recommended, based on experiments, to set this to about 1/2 of
+`spark.executor.cores`, but this varies with the dataset. At most four tasks
+should be active at each worker at a time, as otherwise the tasks quickly will
+begin to interfer with each other when many GATK tools are run on the same
+worker.
+
+### How to build this project
+By default SparkCaller is packaged with all the required dependencies (except
+Spark and Scala) into a single JAR file. All the dependencies are handled by Maven, and
+the package can be built using `mvn clean package`.
+
+#### Dependencies
+The following dependencies are required, but not provided inside the JAR:
+* spark-core_2.11
+* scala-library 2.11.8
 
 ### GCAT test results
 * [Illumini 100 bp pe exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
