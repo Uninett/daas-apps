@@ -289,11 +289,10 @@ public class SparkCaller {
      * @param pathToSAMFiles   the path to the folder containing the SAM files created by the aligner.
      *
      */
-    public File runPipeline(String pathToInputFiles, String inputFileFormat) {
+    public File runPipeline(String pathToInputFiles) {
 
         File vcfVariants = null;
         try {
-            inputFileFormat = inputFileFormat.toLowerCase();
             ArrayList<File> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles);
 
             File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
@@ -366,7 +365,6 @@ public class SparkCaller {
 
         String pathToReference = cmdArgs.getOptionValue("Reference");
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
-        String inputFormat = cmdArgs.getOptionValue("InputFormat");
         String outputDirectory = cmdArgs.getOptionValue("OutputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
@@ -391,7 +389,7 @@ public class SparkCaller {
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
                                              toolsExtraArguments, coresPerNode, driverCores, outputDirectory);
-        caller.runPipeline(pathToSAMFiles, inputFormat);
+        caller.runPipeline(pathToSAMFiles);
         caller.log.info("Closing spark context!");
 
         sparkContext.stop();
