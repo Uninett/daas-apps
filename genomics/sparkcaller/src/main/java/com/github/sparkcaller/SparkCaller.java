@@ -20,6 +20,7 @@ import scala.Tuple2;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class SparkCaller {
@@ -322,7 +323,7 @@ public class SparkCaller {
         options.addOption(inputFolder);
 
         Option outputFolder = new Option("O", "OutputFolder", true, "The path to the folder which will store the final output files.");
-        outputFolder.setRequired(true);
+        outputFolder.setRequired(false);
         options.addOption(outputFolder);
 
         Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
@@ -372,6 +373,11 @@ public class SparkCaller {
 
         String driverCores = sparkContext.getConf().get("spark.driver.cores");
         String coresPerNode = sparkContext.getConf().get("spark.executor.cores");
+
+
+        if (outputDirectory == null) {
+            outputDirectory = Paths.get(pathToSAMFiles, "out-" + sparkContext.sc().applicationId()).toString();
+        }
 
         if (driverCores == null) {
             System.err.println("The spark.driver.cores setting is not set!");
