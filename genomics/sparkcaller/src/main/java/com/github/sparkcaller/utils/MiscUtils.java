@@ -18,7 +18,14 @@ public class MiscUtils {
             ArrayList<File> bamFiles = new ArrayList<File>();
 
             for (File file : listOfFiles) {
-                if (file.isFile() && (file.getName().endsWith("sam") || file.getName().endsWith("bam"))) {
+                if (file.isDirectory()) {
+                    ArrayList<File> filesInDir = getFilesInFolder(file.getPath());
+                    if (filesInDir != null) {
+                        filesInDir.addAll(filesInDir);
+                    }
+                }
+                else if (file.getName().endsWith("sam") || file.getName().endsWith("bam")) {
+                    System.out.println(file.getPath());
                     bamFiles.add(file);
                 }
             }
