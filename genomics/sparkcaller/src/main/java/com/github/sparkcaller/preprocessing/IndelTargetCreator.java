@@ -16,7 +16,7 @@ import java.io.File;
  * For more information.
  *
  */
-public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
+public class IndelTargetCreator extends BaseGATKProgram {
     private String outputFolder;
 
     public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String threads) {
@@ -35,17 +35,5 @@ public class IndelTargetCreator extends BaseGATKProgram implements Function<File
 
         executeProgram();
         return MiscUtils.moveToDir(outputIntervalsFile, this.outputFolder);
-    }
-
-    @Override
-    public Tuple2<File, File> call(File bamFile) throws Exception {
-        setInputFile(bamFile.getPath());
-
-        final String outputIntervalsFilename = MiscUtils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
-        File outputIntervalsFile = new File(outputIntervalsFilename);
-        setOutputFile(outputIntervalsFile.getPath());
-
-        executeProgram();
-        return new Tuple2<>(bamFile, outputIntervalsFile);
     }
 }
