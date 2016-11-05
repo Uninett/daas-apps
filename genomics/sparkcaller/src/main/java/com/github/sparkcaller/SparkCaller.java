@@ -65,7 +65,7 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
-        this.outputFolderPostfix = "out-" + sparkContext.applicationId();
+        this.outputFolderPostfix = "sparkcaller-" + sparkContext.applicationId();
     }
 
     public List<File> maybeConvertToSortedBAM(ArrayList<Tuple2<File, File>> samFiles) {
