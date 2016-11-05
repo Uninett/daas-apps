@@ -388,6 +388,8 @@ public class SparkCaller {
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
 
+        String driverCores = sparkContext.getConf().get("spark.driver.cores", "4");
+        String coresPerNode = sparkContext.getConf().get("spark.executor.cores", "4");
 
         if (driverCores == null) {
             System.err.println("The spark.driver.cores setting is not set!");
