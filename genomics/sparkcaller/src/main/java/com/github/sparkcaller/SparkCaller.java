@@ -30,7 +30,6 @@ public class SparkCaller {
     private Properties toolsExtraArgs;
     private String coresPerNode;
     private String outputFolderPostfix;
-    private String driverCores;
 
     /*
      * The SparkCaller is used for managing the workflow
@@ -44,7 +43,7 @@ public class SparkCaller {
      *
      */
     public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String driverCores) {
+                       Properties toolsExtraArguments, String coresPerNode) {
 
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
@@ -53,12 +52,11 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
-        this.driverCores = driverCores;
         this.outputFolderPostfix = "sparkcaller-" + sparkContext.sc().applicationId();
     }
 
     public SparkCaller(SparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String driverCores) {
+                       Properties toolsExtraArguments, String coresPerNode) {
 
         this.sparkContext = JavaSparkContext.fromSparkContext(sparkContext);
         this.log = Logger.getLogger(this.getClass());
@@ -67,7 +65,6 @@ public class SparkCaller {
         this.toolsExtraArgs = toolsExtraArguments;
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
-        this.driverCores = driverCores;
         this.outputFolderPostfix = "out-" + sparkContext.applicationId();
     }
 
@@ -153,7 +150,7 @@ public class SparkCaller {
 
             JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size());
             List<File> bqsrTargets = bamFilesRDD.map(new BQSRTargetGenerator(this.pathToReference, this.knownSites,
-                                                                             baseRecalibratorExtraArgs, driverCores))
+                                                                             baseRecalibratorExtraArgs, this.coresPerNode))
                                                 .map(new FileMover(this.outputFolderPostfix)).collect();
 
             HashMap<String, File> bqsrTargetsMapper = createTargetMapping(bqsrTargets);
@@ -246,7 +243,7 @@ public class SparkCaller {
             this.log.info("Creating indel targets...");
             JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size()).map(BAMIndexer::indexBAM);
             List<File> indelTargets = bamFilesRDD.map(new IndelTargetCreator(this.pathToReference,
-                                                      realignerTargetCreatorExtraArgs, driverCores))
+                                                      realignerTargetCreatorExtraArgs, this.coresPerNode))
                                                  .map(new FileMover(this.outputFolderPostfix)).collect();
 
             HashMap<String, File> indelTargetsMapper = createTargetMapping(indelTargets);
@@ -388,15 +385,7 @@ public class SparkCaller {
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
 
-        String driverCores = sparkContext.getConf().get("spark.driver.cores", "4");
         String coresPerNode = sparkContext.getConf().get("spark.executor.cores", "4");
-
-        if (driverCores == null) {
-            System.err.println("The spark.driver.cores setting is not set!");
-            System.err.println("spark.driver.cores is required to determine how many cores to use on sequential tasks.");
-            System.err.println("Exiting!");
-            System.exit(1);
-        }
 
         if (coresPerNode == null) {
             System.err.println("The spark.executor.cores setting is not set!");
@@ -406,7 +395,7 @@ public class SparkCaller {
         }
 
         SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites, toolsExtraArguments,
-                                             coresPerNode, driverCores);
+                                             coresPerNode);
         caller.runPipeline(pathToSAMFiles);
         caller.log.info("Closing spark context!");
 
