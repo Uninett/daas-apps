@@ -32,13 +32,13 @@ The name which GATK uses for the tool is used as the key. The following keys
 are valid:
 
 * SortSam (currently does not accept extra arguments)
-* AddOrReplaceReadGroups
-* MarkDuplicates
-* RealignerTargetCreator
-* IndelRealigner
-* BaseRecalibrator
-* PrintReads
-* HaplotypeCaller
+* [AddOrReplaceReadGroups](https://broadinstitute.github.io/picard/command-line-overview.html#AddOrReplaceReadGroups)
+* [MarkDuplicates](https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates)
+* [RealignerTargetCreator](https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_indels_RealignerTargetCreator.php)
+* [IndelRealigner](https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_indels_IndelRealigner.php)
+* [BaseRecalibrator](https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_bqsr_BaseRecalibrator.php)
+* [PrintReads](https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_readutils_PrintReads.php)
+* [HaplotypeCaller](https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php)
 
 #### Arguments already specified by SparkCaller
 The input, reference, and output arguments are set automatically for all tools.
