@@ -6,6 +6,7 @@ import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
 import java.io.File;
+import java.util.HashMap;
 
 /*
  * Realign the indels found by the RealignerTargetCreator.
@@ -15,27 +16,34 @@ import java.io.File;
  *
  * For more information.
  */
-public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<String, File>, File> {
+public class RealignIndels extends BaseGATKProgram implements Function<Tuple2<String, Tuple2<File, File>>, Tuple2<File, File>> {
 
-    public RealignIndels(String pathToReference, File indelTargets, String extraArgs) {
+    private final HashMap<String, File> indelTargetsMapper;
+
+    public RealignIndels(String pathToReference, HashMap<String, File> indelTargetsMapper, String extraArgs) {
         super("IndelRealigner", extraArgs);
         setReference(pathToReference);
-        changeArgument("-targetIntervals", indelTargets.getPath());
+        this.indelTargetsMapper = indelTargetsMapper;
 }
 
-    public File call(Tuple2<String, File> contigTuple) throws Exception {
+    public Tuple2<File, File> call(Tuple2<String, Tuple2<File, File>> contigTuple) throws Exception {
         String contig = contigTuple._1;
-        File inputBam = contigTuple._2;
+        Tuple2<File, File> inputOutputTuple = contigTuple._2;
+
+        File inputBam = inputOutputTuple._2;
+
+        File indelTargets = this.indelTargetsMapper.get(inputOutputTuple._1.getParentFile().getParent());
+        changeArgument("-targetIntervals", indelTargets.getPath());
 
         setInterval(contig);
         setInputFile(inputBam.getPath());
 
-        final String newFileName = MiscUtils.removeExtenstion(inputBam.getPath(), "bam") + "-realigned.bam";
+        final String newFileName = MiscUtils.removeExtenstion(inputBam.getName(), "bam") + "-realigned.bam";
 
         File outputBamFile = new File(newFileName);
         setOutputFile(outputBamFile.getPath());
 
         executeProgram();
-        return outputBamFile;
+        return new Tuple2<>(inputOutputTuple._1, outputBamFile);
     }
 }

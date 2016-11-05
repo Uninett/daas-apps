@@ -16,24 +16,29 @@ import java.io.File;
  * For more information.
  *
  */
-public class IndelTargetCreator extends BaseGATKProgram {
-    private String outputFolder;
+public class IndelTargetCreator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
 
-    public IndelTargetCreator(String pathToReference, String outputFolder, String extraArgsString, String threads) {
+    public IndelTargetCreator(String pathToReference, String extraArgsString, String threads) {
         super("RealignerTargetCreator", extraArgsString);
         setReference(pathToReference);
         addArgument("-nt", threads);
-        this.outputFolder = outputFolder;
     }
 
     public File createTargets(File bamFile) throws Exception {
         setInputFile(bamFile.getPath());
 
-        final String outputIntervalsFilename = MiscUtils.removeExtenstion(bamFile.getPath(), "bam") + "-target.intervals";
+        final String outputIntervalsFilename = MiscUtils.removeExtenstion(bamFile.getName(), "bam") + "-target.intervals";
         File outputIntervalsFile = new File(outputIntervalsFilename);
         setOutputFile(outputIntervalsFile.getPath());
 
         executeProgram();
-        return MiscUtils.moveToDir(outputIntervalsFile, this.outputFolder);
+        return outputIntervalsFile;
+    }
+
+    @Override
+    public Tuple2<File, File> call(File inputFile) throws Exception {
+        File targets = this.createTargets(inputFile);
+
+        return new Tuple2<>(inputFile, targets);
     }
 }

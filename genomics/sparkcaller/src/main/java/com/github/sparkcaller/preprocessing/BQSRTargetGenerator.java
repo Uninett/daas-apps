@@ -2,6 +2,8 @@ package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.BaseGATKProgram;
 import com.github.sparkcaller.utils.MiscUtils;
+import org.apache.spark.api.java.function.Function;
+import scala.Tuple2;
 
 import java.io.File;
 
@@ -14,27 +16,29 @@ import java.io.File;
  * For more information.
  *
  */
-public class BQSRTargetGenerator extends BaseGATKProgram {
+public class BQSRTargetGenerator extends BaseGATKProgram implements Function<File, Tuple2<File, File>> {
 
-    private String outputFolder;
-
-    public BQSRTargetGenerator(String pathToReference, String knownSites, String outputFolder, String extraArgs, String coresPerNode) {
+    public BQSRTargetGenerator(String pathToReference, String knownSites, String extraArgs, String coresPerNode) {
         super("BaseRecalibrator", extraArgs);
         setReference(pathToReference);
         addArgument("-knownSites", knownSites);
         setThreads(coresPerNode);
-
-        this.outputFolder = outputFolder;
     }
 
     public File generateTargets(File file) throws Exception {
         setInputFile(file.getPath());
-        String outputTableFilename = MiscUtils.removeExtenstion(file.getPath(), "bam") + "-recal_data.table";
+        String outputTableFilename = MiscUtils.removeExtenstion(file.getName(), "bam") + "-recal_data.table";
         File outputTable = new File(outputTableFilename);
 
         setOutputFile(outputTable.getPath());
 
         executeProgram();
-        return MiscUtils.moveToDir(outputTable, this.outputFolder);
+        return outputTable;
+    }
+
+    @Override
+    public Tuple2<File, File> call(File inputBAM) throws Exception {
+        File bqsrTargets = this.generateTargets(inputBAM);
+        return new Tuple2<>(inputBAM, bqsrTargets);
     }
 }

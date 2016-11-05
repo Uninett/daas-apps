@@ -1,7 +1,9 @@
 package com.github.sparkcaller.preprocessing;
 
 import com.github.sparkcaller.utils.MiscUtils;
+import org.apache.spark.api.java.function.Function;
 import picard.sam.markduplicates.MarkDuplicates;
+import scala.Tuple2;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,9 +11,14 @@ import java.util.ArrayList;
 /*
  * Marks all the duplicate reads found in the input BAM file using Picard.
  */
-public class DuplicateMarker {
+public class DuplicateMarker implements Function<File, Tuple2<File, File>> {
+    final private String extraArgs;
 
-    public static File markDuplicates(File file, String outputFolder, String extraArgsString) throws Exception {
+    public DuplicateMarker(String extraArgs) {
+        this.extraArgs = extraArgs;
+    }
+
+    public static File markDuplicates(File file, String extraArgsString) throws Exception {
         MarkDuplicates markDuplicates = new MarkDuplicates();
         ArrayList<String> extraArgs = MiscUtils.possibleStringToArgs(extraArgsString);
 
@@ -19,7 +26,7 @@ public class DuplicateMarker {
         markerArgs.add("INPUT=");
         markerArgs.add(file.getPath());
 
-        String newFileName = MiscUtils.removeExtenstion(file.getPath(), "bam") + "-deduped.bam";
+        String newFileName = MiscUtils.removeExtenstion(file.getName(), "bam") + "-deduped.bam";
         File outputBamFile = new File(newFileName);
 
         markerArgs.add("CREATE_INDEX=");
@@ -36,6 +43,12 @@ public class DuplicateMarker {
         }
 
         markDuplicates.instanceMain(markerArgs.toArray(new String[0]));
-        return MiscUtils.moveToDir(outputBamFile, outputFolder);
+        return outputBamFile;
+    }
+
+    @Override
+    public Tuple2<File, File> call(File inputBAM) throws Exception {
+        File outputBAM = DuplicateMarker.markDuplicates(inputBAM, this.extraArgs);
+        return new Tuple2<>(inputBAM, outputBAM);
     }
 }

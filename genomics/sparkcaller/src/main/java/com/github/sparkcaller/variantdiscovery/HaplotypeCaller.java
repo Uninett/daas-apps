@@ -7,7 +7,7 @@ import scala.Tuple2;
 
 import java.io.File;
 
-public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<String, File>, File> {
+public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<String, Tuple2<File, File>>, Tuple2<File, File>> {
 
     public HaplotypeCaller(String pathToReference, String extraArgsString, String availableCoresPerNode) {
         super("HaplotypeCaller", extraArgsString);
@@ -15,9 +15,10 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<
         setThreads(availableCoresPerNode);
     }
 
-    public File call(Tuple2<String, File> contigTuple) throws Exception {
+    public Tuple2<File, File> call(Tuple2<String, Tuple2<File, File>> contigTuple) throws Exception {
         String contig = contigTuple._1;
-        File inputBam = contigTuple._2;
+        Tuple2<File, File> inputOutputFiles = contigTuple._2;
+        File inputBam = inputOutputFiles._2;
 
         String outputFilename = MiscUtils.removeExtenstion(inputBam.getPath(), "bam")  + ".vcf";
         setInterval(contig);
@@ -25,6 +26,7 @@ public class HaplotypeCaller extends BaseGATKProgram implements Function<Tuple2<
         setOutputFile(outputFilename);
 
         executeProgram();
-        return new File(outputFilename);
+        File outputFile = new File(outputFilename);
+        return new Tuple2<>(inputOutputFiles._1, outputFile);
     }
 }

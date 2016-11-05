@@ -1,6 +1,8 @@
 package com.github.sparkcaller.utils;
 
 import org.apache.commons.io.FileUtils;
+import scala.Tuple2;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,23 +12,22 @@ public class MiscUtils {
     /*
     Get all the SAM/BAM files in the folder 'pathToFolder', and return them as an ArrayList.
     */
-    public static ArrayList<File> getFilesInFolder(String pathToFolder) {
+    public static ArrayList<Tuple2<File, File>> getFilesInFolder(String pathToFolder) {
         File folder = new File(pathToFolder);
         File[] listOfFiles = folder.listFiles();
 
         if (listOfFiles != null) {
-            ArrayList<File> bamFiles = new ArrayList<File>();
+            ArrayList<Tuple2<File, File>> bamFiles = new ArrayList<>();
 
             for (File file : listOfFiles) {
-                if (file.isDirectory()) {
-                    ArrayList<File> filesInDir = getFilesInFolder(file.getPath());
+                if (file.isDirectory() && !file.getName().startsWith("sparkcaller")) {
+                    ArrayList<Tuple2<File, File>> filesInDir = getFilesInFolder(file.getPath());
                     if (filesInDir != null) {
-                        filesInDir.addAll(filesInDir);
+                        bamFiles.addAll(filesInDir);
                     }
                 }
                 else if (file.getName().endsWith("sam") || file.getName().endsWith("bam")) {
-                    System.out.println(file.getPath());
-                    bamFiles.add(file);
+                    bamFiles.add(new Tuple2<>(folder, file));
                 }
             }
             return bamFiles;
@@ -82,7 +83,8 @@ public class MiscUtils {
     }
 
     public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) {
-        String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
+        //String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
+        String pathToUnpackedBinary = "/home/paal/Desktop/genomics/tools/samtools-1.3.1/samtools";
 
         if (pathToUnpackedBinary == null) {
             System.err.println("Could not find binary: " + binaryName);
@@ -104,7 +106,14 @@ public class MiscUtils {
 
                 if (p.exitValue() != 0) {
                     System.err.println(binaryName + " exited with error code: " + p.exitValue());
-                    System.err.println(p.getErrorStream());
+                    InputStream errorStream = p.getErrorStream();
+                    BufferedReader errorStreamReader = new BufferedReader(new InputStreamReader(errorStream));
+
+                    String currLine = null;
+                    while ((currLine = errorStreamReader.readLine()) != null) {
+                        System.out.println(currLine);
+                    }
+
                     return p.exitValue();
                 }
                 break;

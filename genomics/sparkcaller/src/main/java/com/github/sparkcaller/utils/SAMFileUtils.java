@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SAMFileUtils {
 
-    public static File mergeBAMFiles(List<File> samFiles, String outputPath, String outputFileName, String coresPerNode) throws Exception {
+    public static File mergeBAMFiles(List<File> samFiles, String outputFileName, String coresPerNode) throws Exception {
         File outputFile;
 
         if (samFiles.size() > 1) {
@@ -17,7 +17,7 @@ public class SAMFileUtils {
                 outputFileName = outputFileName + ".bam";
             }
 
-            outputFile = new File(outputPath, outputFileName);
+            outputFile = new File(outputFileName);
 
             ArrayList<String> args = new ArrayList<>();
             args.add("merge");
@@ -30,8 +30,6 @@ public class SAMFileUtils {
             }
 
             MiscUtils.executeResourceBinary("samtools", args);
-
-            com.github.sparkcaller.preprocessing.BAMIndexer.indexBAM(outputFile);
         } else if (samFiles.size() != 0) {
             outputFile = samFiles.get(0);
         } else {
@@ -43,9 +41,9 @@ public class SAMFileUtils {
         return outputFile;
     }
 
-    public static File addOrReplaceRG(File inputFile, String outputFolder, String args) {
+    public static File addOrReplaceRG(File inputFile, String args) {
         AddOrReplaceReadGroups addOrReplaceReadGroupsEngine = new AddOrReplaceReadGroups();
-        File outputFile = new File(outputFolder, MiscUtils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
+        File outputFile = new File(MiscUtils.removeExtenstion(inputFile.getName(), "bam" )+ "-rg" + ".bam");
         ArrayList<String> extraArgs = MiscUtils.possibleStringToArgs(args);
 
 

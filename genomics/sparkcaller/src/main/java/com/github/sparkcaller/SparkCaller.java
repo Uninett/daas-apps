@@ -20,7 +20,6 @@ import scala.Tuple2;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class SparkCaller {
@@ -30,7 +29,7 @@ public class SparkCaller {
     private String knownSites;
     private Properties toolsExtraArgs;
     private String coresPerNode;
-    private String outputFolder;
+    private String outputFolderPostfix;
     private String driverCores;
 
     /*
@@ -45,7 +44,7 @@ public class SparkCaller {
      *
      */
     public SparkCaller(JavaSparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String driverCores, String outputFolder) {
+                       Properties toolsExtraArguments, String coresPerNode, String driverCores) {
 
         this.sparkContext = sparkContext;
         this.log = Logger.getLogger(this.getClass());
@@ -55,11 +54,11 @@ public class SparkCaller {
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
         this.driverCores = driverCores;
-        this.outputFolder = outputFolder;
+        this.outputFolderPostfix = "sparkcaller-" + sparkContext.sc().applicationId();
     }
 
     public SparkCaller(SparkContext sparkContext, String pathToReference, String knownSites,
-                       Properties toolsExtraArguments, String coresPerNode, String driverCores, String outputFolder) {
+                       Properties toolsExtraArguments, String coresPerNode, String driverCores) {
 
         this.sparkContext = JavaSparkContext.fromSparkContext(sparkContext);
         this.log = Logger.getLogger(this.getClass());
@@ -69,60 +68,54 @@ public class SparkCaller {
         this.knownSites = knownSites;
         this.coresPerNode = coresPerNode;
         this.driverCores = driverCores;
-        this.outputFolder = outputFolder;
+        this.outputFolderPostfix = "out-" + sparkContext.applicationId();
     }
 
-    public File maybeConvertToSortedBAM(ArrayList<File> samFiles) {
+    public List<File> maybeConvertToSortedBAM(ArrayList<Tuple2<File, File>> samFiles) {
         String sortSamExtraArgs = this.toolsExtraArgs.getProperty("SortSam");
-        List<File> bamFiles;
+
+        this.log.info("Distributing the SAM files to the nodes...");
 
         if (sortSamExtraArgs != null) {
-            this.log.info("Distributing the SAM files to the nodes...");
-            JavaRDD<File> samFilesRDD = this.sparkContext.parallelize(samFiles, samFiles.size());
-
             this.log.info("Converting the SAM files to sorted BAM files...");
-            bamFiles = samFilesRDD.map(new SAMToSortedBAM()).map(new FileMover(this.outputFolder)).collect();
-        }  else {
-            bamFiles = samFiles;
-        }
 
-        try {
-            return SAMFileUtils.mergeBAMFiles(bamFiles, this.outputFolder, "merged-sorted", this.coresPerNode);
-        } catch (IOException e) {
-            this.log.error("Could not merge files!");
-            e.printStackTrace();
-            System.exit(1);
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-            return null;
+            JavaRDD<Tuple2<File, File>> bamFilesRDD = this.sparkContext.parallelize(samFiles, samFiles.size());
+            bamFilesRDD = bamFilesRDD.map(new SAMToSortedBAM());
+            return mergeBAMsAndMove(bamFilesRDD, "merged-sorted");
+        } else {
+            List<File> outputBamFiles = new ArrayList<File>();
+            for (Tuple2<File, File> inputOutputTuple : samFiles) {
+                outputBamFiles.add(inputOutputTuple._2);
+            }
+
+            return outputBamFiles;
         }
     }
 
-    public File maybeMarkDuplicates(File bamFile) throws Exception {
+    public List<File> maybeMarkDuplicates(List<File> bamFiles) throws Exception {
         String markDuplicatesExtraArgs = this.toolsExtraArgs.getProperty("MarkDuplicates");
 
         if (markDuplicatesExtraArgs != null) {
             this.log.info("Marking duplicates...");
-            return DuplicateMarker.markDuplicates(bamFile, this.outputFolder, markDuplicatesExtraArgs);
+            JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size());
+            return bamFilesRDD.map(new DuplicateMarker(markDuplicatesExtraArgs)).map(new FileMover(this.outputFolderPostfix)).collect();
         }
 
         this.log.info("Skipping mark duplicates! Args for MarkDuplicates was not provided.");
-        return bamFile;
+        return bamFiles;
     }
 
-    public File maybeAddOrReplaceRG(File bamFile) throws Exception {
+    public List<File> maybeAddOrReplaceRG(List<File> bamFiles) throws Exception {
         String addOrReplaceExtraArgs = this.toolsExtraArgs.getProperty("AddOrReplaceReadGroups");
 
         if (addOrReplaceExtraArgs != null) {
             this.log.info("Adding read groups...");
-            File bamWithRG = SAMFileUtils.addOrReplaceRG(bamFile, this.outputFolder, addOrReplaceExtraArgs);
-            return bamWithRG;
+            JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size());
+            return bamFilesRDD.map(new AddOrReplaceRGs(addOrReplaceExtraArgs)).map(new FileMover(this.outputFolderPostfix)).collect();
         }
 
         this.log.info("Skipping AddOrReplaceReadGroups! Args for AddOrReplaceReadGroups was not provided.");
-        return bamFile;
+        return bamFiles;
     }
 
     /* Performs the preprocessing stage of the GATK pipeline.
@@ -132,16 +125,16 @@ public class SparkCaller {
      * @param pathToSAMFiles   the path to the folder containing the SAM files created by the aligner.
      *
     */
-    public File preprocessSAMFiles(ArrayList<File> samFiles) throws Exception {
+    public List<File> preprocessSAMFiles(ArrayList<Tuple2<File, File>> samFiles) throws Exception {
 
         this.log.info("Preprocessing SAM files!");
         if (samFiles != null) {
-            File mergedBAMFile = maybeConvertToSortedBAM(samFiles);
-            File BAMWithRG = maybeAddOrReplaceRG(mergedBAMFile);
+            List<File> mergedBAMFile = maybeConvertToSortedBAM(samFiles);
+            List<File> BAMWithRG = maybeAddOrReplaceRG(mergedBAMFile);
 
-            File dedupedBAMFile = maybeMarkDuplicates(BAMWithRG);
-            File realignedBAMFile = maybeRealignIndels(dedupedBAMFile);
-            File recalibratedBAMFile = maybePerformBQSR(realignedBAMFile);
+            List<File> dedupedBAMFile = maybeMarkDuplicates(BAMWithRG);
+            List<File> realignedBAMFile = maybeRealignIndels(dedupedBAMFile);
+            List<File> recalibratedBAMFile = maybePerformBQSR(realignedBAMFile);
 
             this.log.info("Preprocessing finished!");
             return recalibratedBAMFile;
@@ -150,108 +143,133 @@ public class SparkCaller {
         return null;
     }
 
-    public File maybePerformBQSR(File bamFile) throws Exception {
+    public List<File> maybePerformBQSR(List<File> bamFiles) throws Exception {
 
         String baseRecalibratorExtraArgs = this.toolsExtraArgs.getProperty("BaseRecalibrator");
         String printReadsExtraArgs = this.toolsExtraArgs.getProperty("PrintReads");
 
         if (baseRecalibratorExtraArgs != null && printReadsExtraArgs != null) {
             this.log.info("Creating targets on which to perform BQSR...");
-            BQSRTargetGenerator bqsrTargetGenerator = new BQSRTargetGenerator(this.pathToReference,
-                    this.knownSites,
-                    this.outputFolder,
-                    baseRecalibratorExtraArgs,
-                    this.driverCores);
 
-            File bqsrTargets = bqsrTargetGenerator.generateTargets(bamFile);
-            JavaPairRDD<String, File> bamFilesRDD = splitByChromosomeAndCreateIndex(bamFile);
+            JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size());
+            List<File> bqsrTargets = bamFilesRDD.map(new BQSRTargetGenerator(this.pathToReference, this.knownSites,
+                                                                             baseRecalibratorExtraArgs, driverCores))
+                                                .map(new FileMover(this.outputFolderPostfix)).collect();
+
+            HashMap<String, File> bqsrTargetsMapper = createTargetMapping(bqsrTargets);
+
+            JavaPairRDD<String, Tuple2<File, File>> bamsByChromosome = splitByChromosomeAndCreateIndex(bamFiles);
 
             this.log.info("Performing BQSR...");
-            JavaRDD<File> recalibratedBAMFilesRDD = bamFilesRDD.map(new BQSR(this.pathToReference,
-                    bqsrTargets.getPath(),
-                    printReadsExtraArgs,
-                    this.coresPerNode)).map(new FileMover(this.outputFolder));
-            return  SAMFileUtils.mergeBAMFiles(recalibratedBAMFilesRDD.collect(), this.outputFolder, "merged-bqsr", this.coresPerNode);
+            return mergeBAMsAndMove(bamsByChromosome.map(new BQSR(this.pathToReference, bqsrTargetsMapper,
+                                                              printReadsExtraArgs,
+                                                              this.coresPerNode)), "merged-bqsr");
         }
 
         this.log.info("Skipping BQSR! Args for BaseRecalibrator or/and PrintReads was not provided.");
-        return bamFile;
+        return bamFiles;
     }
 
-    private JavaPairRDD<String, File> splitByChromosomeAndCreateIndex(File inputBAMFile) throws IOException {
-        this.log.info("Splitting BAM by chromosome...");
-        // Get the list of all contigs, so that we can distribute the splitting to different nodes.
-        SamReader samFile = SamReaderFactory.makeDefault().open(inputBAMFile);
-        SAMFileHeader samFileHeader = samFile.getFileHeader();
-        List<SAMSequenceRecord> allContigs = samFileHeader.getSequenceDictionary().getSequences();
+    private List<File> mergeBAMsAndMove(JavaRDD<Tuple2<File, File>> inputRDD, String mergedFileName) {
+        return inputRDD.map(new FileMover(this.outputFolderPostfix)).groupBy(File::getParent).map(new BAMMerger(mergedFileName, this.coresPerNode))
+                                                      .map(new FileMover(this.outputFolderPostfix)).map(BAMIndexer::indexBAM).collect();
+    }
 
-        String baseContigFilename = MiscUtils.removeExtenstion(inputBAMFile.getName(), "bam");
+    private JavaPairRDD<String, Tuple2<File, File>> splitByChromosomeAndCreateIndex(List<File> inputBAMFiles) throws IOException {
+        this.log.info("Splitting BAM by chromosome...");
+        ArrayList<Tuple2<File, List<SAMSequenceRecord>>> samFileSequences = new ArrayList<>();
+        int totalNumContigs = 0;
+
+        for (File inputFile : inputBAMFiles) {
+            SamReader samFile = SamReaderFactory.makeDefault().open(inputFile);
+            SAMFileHeader samFileHeader = samFile.getFileHeader();
+            List<SAMSequenceRecord> allContigs = samFileHeader.getSequenceDictionary().getSequences();
+            totalNumContigs += allContigs.size();
+
+            samFileSequences.add(new Tuple2<>(inputFile, allContigs));
+        }
+
 
         // Use the length of the contigs to determine which partition they should be in.
-        final int coresPerTask = this.sparkContext.getConf().getInt("spark.task.cpus", 1);
+        final int coresPerTask = this.sparkContext.getConf().getInt("spark.task.cpus", 4);
         final int contigsPerPartition = Integer.parseInt(this.coresPerNode) / coresPerTask;
-
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
-        int numPartitions = (int) Math.ceil(allContigs.size() / contigsPerPartition);
-        long[] contigLengthPartitions = new long[numPartitions];
+        final int numPartitions = (int) Math.ceil(totalNumContigs / contigsPerPartition);
 
+        long[] contigLengthPartitions = new long[numPartitions];
         for (int i = 0; i < contigLengthPartitions.length; i++) {
             contigLengthPartitions[i] = 0;
         }
 
-        List<Tuple2<String, File>> contigsName = new ArrayList<>();
-        for (SAMSequenceRecord contig : allContigs) {
-            long currMin = -1;
-            int currMinIndex = -1;
+        List<Tuple2<String, Tuple2<File, File>>> contigsName = new ArrayList<>();
+        for (Tuple2<File, List<SAMSequenceRecord>> fileContigsTuple : samFileSequences) {
+            File inputBAMFile = fileContigsTuple._1;
+            List<SAMSequenceRecord> allContigs = fileContigsTuple._2;
 
-            // Find the partition with the smallest total size
-            for (int i = 0; i < contigLengthPartitions.length; i++) {
-                long partitionSize = contigLengthPartitions[i];
+            String baseContigFilename = MiscUtils.removeExtenstion(inputBAMFile.getPath(), "bam");
+            for (SAMSequenceRecord contig : allContigs) {
+                long currMin = -1;
+                int currMinIndex = -1;
 
-                if (currMin == -1 || partitionSize < currMin) {
-                    currMin = partitionSize;
-                    currMinIndex = i;
+                // Find the partition with the smallest total size
+                for (int i = 0; i < contigLengthPartitions.length; i++) {
+                    long partitionSize = contigLengthPartitions[i];
+
+                    if (currMin == -1 || partitionSize < currMin) {
+                        currMin = partitionSize;
+                        currMinIndex = i;
+                    }
                 }
+
+                // Place the contig in the partition which currently is the smallest
+                contigLengthPartitions[currMinIndex] +=  contig.getSequenceLength();
+                String sequenceName = contig.getSequenceName();
+                contigPartitionMapping.put(sequenceName, currMinIndex);
+
+                String outputFilename = baseContigFilename + "-" + sequenceName + ".bam";
+                Tuple2<File, File> inputFileContig = new Tuple2<>(inputBAMFile,  new File(outputFilename));
+                contigsName.add(new Tuple2<>(sequenceName, inputFileContig));
             }
-
-            // Place the contig in the partition which currently is the smallest
-            contigLengthPartitions[currMinIndex] +=  contig.getSequenceLength();
-            String sequenceName = contig.getSequenceName();
-            contigPartitionMapping.put(sequenceName, currMinIndex);
-
-            String outputFilename = baseContigFilename + "-" + sequenceName + ".bam";
-            contigsName.add(new Tuple2<>(sequenceName, new File(outputFilename)));
         }
 
-        JavaPairRDD<String, File> bamsByContigWithName = this.sparkContext.parallelizePairs(contigsName, contigsName.size());
-        return bamsByContigWithName.partitionBy(new BinPartitioner(numPartitions, contigPartitionMapping)).mapToPair(new SAMSplitter(inputBAMFile, this.coresPerNode)).mapValues(new BAMIndexer());
+        JavaPairRDD<String, Tuple2<File, File>> bamsByContigWithName = this.sparkContext.parallelizePairs(contigsName, contigsName.size());
+        return bamsByContigWithName.partitionBy(new BinPartitioner(numPartitions, contigPartitionMapping))
+                                   .mapToPair(new SAMSplitter(this.coresPerNode))
+                                   .mapValues(new BAMIndexer());
     }
 
-    public File maybeRealignIndels(File bamFile) throws Exception {
+    public List<File> maybeRealignIndels(List<File> bamFiles) throws Exception {
         String realignerTargetCreatorExtraArgs = this.toolsExtraArgs.getProperty("RealignerTargetCreator");
         String indelRealignerExtraArgs = this.toolsExtraArgs.getProperty("IndelRealigner");
 
         if (indelRealignerExtraArgs != null && realignerTargetCreatorExtraArgs != null) {
             this.log.info("Creating indel targets...");
-            IndelTargetCreator indelTargetCreator = new IndelTargetCreator(this.pathToReference,
-                                                                           this.outputFolder,
-                                                                           realignerTargetCreatorExtraArgs,
-                                                                           driverCores);
-            File indelTargets = indelTargetCreator.createTargets(bamFile);
+            JavaRDD<File> bamFilesRDD = this.sparkContext.parallelize(bamFiles, bamFiles.size()).map(BAMIndexer::indexBAM);
+            List<File> indelTargets = bamFilesRDD.map(new IndelTargetCreator(this.pathToReference,
+                                                      realignerTargetCreatorExtraArgs, driverCores))
+                                                 .map(new FileMover(this.outputFolderPostfix)).collect();
+
+            HashMap<String, File> indelTargetsMapper = createTargetMapping(indelTargets);
 
             this.log.info("Splitting BAMs by chromosome...");
-            JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(bamFile);
+            JavaPairRDD<String, Tuple2<File, File>> bamsByContigRDD = splitByChromosomeAndCreateIndex(bamFiles);
 
             this.log.info("Realigning indels...");
-            JavaRDD<File> realignedIndels = bamsByContigRDD.map(new RealignIndels(this.pathToReference,
-                    indelTargets,
-                    indelRealignerExtraArgs)).map(new FileMover(this.outputFolder));
-
-            return SAMFileUtils.mergeBAMFiles(realignedIndels.collect(), this.outputFolder, "merged-realigned", this.coresPerNode);
+            return mergeBAMsAndMove(bamsByContigRDD.map(new RealignIndels(this.pathToReference, indelTargetsMapper,
+                                                         indelRealignerExtraArgs)), "merged-realigned");
         }
 
         this.log.info("Skipping indel realignment! Args for RealingerTargetCreator and/or IndelRealinger was not provided.");
-        return bamFile;
+        return bamFiles;
+    }
+
+    private HashMap<String, File> createTargetMapping(List<File> targets) {
+        HashMap<String, File> targetsMapper = new HashMap<>();
+        for (File target : targets) {
+            targetsMapper.put(target.getParentFile().getParent(), target);
+        }
+
+        return targetsMapper;
     }
 
     /* Performs the variant discovery stage of the GATK pipeline.
@@ -260,24 +278,28 @@ public class SparkCaller {
      * @param preprocessedBAMFiles   a spark RDD containing the File object for each preprocessed BAM file.
      *
     */
-    public File discoverVariants(File preprocessedBAMFile) throws IOException {
+    public List<File> discoverVariants(List<File> preprocessedBAMFiles) throws IOException {
         this.log.info("Starting variant discovery!");
-        return maybePerformHaplotypeCalling(preprocessedBAMFile);
+        return maybePerformHaplotypeCalling(preprocessedBAMFiles);
     }
 
-    private File maybePerformHaplotypeCalling(File preprocessedBAMFile) throws IOException {
+    private List<File> maybePerformHaplotypeCalling(List<File> preprocessedBAMFiles) throws IOException {
         String haplotypeCallerExtraArgs = this.toolsExtraArgs.getProperty("HaplotypeCaller");
 
         if (haplotypeCallerExtraArgs != null) {
             this.log.info("Running HaplotypeCaller...");
-            JavaPairRDD<String, File> bamsByContigRDD = splitByChromosomeAndCreateIndex(preprocessedBAMFile);
+            JavaPairRDD<String, Tuple2<File, File>> bamsByContigRDD = splitByChromosomeAndCreateIndex(preprocessedBAMFiles);
 
-            JavaRDD<File> variantsVCFFilesRDD = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
+            JavaRDD<Tuple2<File, File>> variantsVCFFilesRDD = bamsByContigRDD.map(new HaplotypeCaller(this.pathToReference,
                     haplotypeCallerExtraArgs,
                     this.coresPerNode));
-            List<File> variantFiles = variantsVCFFilesRDD.map(new FileMover(this.outputFolder)).collect();
-            File mergedVcfs = VCFFileUtils.mergeVCFFiles(variantFiles, "merged-hap");
-            return MiscUtils.moveToDir(mergedVcfs, this.outputFolder);
+
+            List<File> mergedVcfs = variantsVCFFilesRDD.map(new FileMover(this.outputFolderPostfix))
+                                                       .groupBy(File::getParent)
+                                                       .map(new VCFMerger("merged-hap"))
+                                                       .map(new FileMover(this.outputFolderPostfix)).collect();
+
+            return mergedVcfs;
         }
 
         this.log.info("Skipping haplotype calling! Args for HaplotypeCaller was not provided.");
@@ -290,13 +312,13 @@ public class SparkCaller {
      * @param pathToSAMFiles   the path to the folder containing the SAM files created by the aligner.
      *
      */
-    public File runPipeline(String pathToInputFiles) {
+    public List<File> runPipeline(String pathToInputFiles) {
 
-        File vcfVariants = null;
+        List<File> vcfVariants = null;
         try {
-            ArrayList<File> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles);
+            ArrayList<Tuple2<File, File>> inputFiles = MiscUtils.getFilesInFolder(pathToInputFiles);
 
-            File preprocessedBAMFile = preprocessSAMFiles(inputFiles);
+            List<File> preprocessedBAMFile = preprocessSAMFiles(inputFiles);
 
             if (preprocessedBAMFile != null) {
                 vcfVariants = discoverVariants(preprocessedBAMFile);
@@ -321,10 +343,6 @@ public class SparkCaller {
         Option inputFolder = new Option("I", "InputFolder", true, "The path to the folder containing the input files.");
         inputFolder.setRequired(true);
         options.addOption(inputFolder);
-
-        Option outputFolder = new Option("O", "OutputFolder", true, "The path to the folder which will store the final output files.");
-        outputFolder.setRequired(false);
-        options.addOption(outputFolder);
 
         Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
         knownSites.setRequired(true);
@@ -366,18 +384,10 @@ public class SparkCaller {
 
         String pathToReference = cmdArgs.getOptionValue("Reference");
         String pathToSAMFiles = cmdArgs.getOptionValue("InputFolder");
-        String outputDirectory = cmdArgs.getOptionValue("OutputFolder");
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
 
-        String driverCores = sparkContext.getConf().get("spark.driver.cores");
-        String coresPerNode = sparkContext.getConf().get("spark.executor.cores");
-
-
-        if (outputDirectory == null) {
-            outputDirectory = Paths.get(pathToSAMFiles, "out-" + sparkContext.sc().applicationId()).toString();
-        }
 
         if (driverCores == null) {
             System.err.println("The spark.driver.cores setting is not set!");
@@ -393,8 +403,8 @@ public class SparkCaller {
             System.exit(1);
         }
 
-        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites,
-                                             toolsExtraArguments, coresPerNode, driverCores, outputDirectory);
+        SparkCaller caller = new SparkCaller(sparkContext, pathToReference, knownSites, toolsExtraArguments,
+                                             coresPerNode, driverCores);
         caller.runPipeline(pathToSAMFiles);
         caller.log.info("Closing spark context!");
 
