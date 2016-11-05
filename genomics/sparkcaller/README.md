@@ -62,6 +62,7 @@ The input, reference, and output arguments are set automatically for all tools.
 ```
 spark-submit                                      \
 --class com.github.sparkcaller.SparkCaller        \
+--conf spark.executor.cores=<num cores per node>  \
 --executor-memory <RAM per executor>              \
 --driver-memory  <driver RAM>                     \
 sparkcaller-1.0.jar                               \
@@ -75,6 +76,7 @@ Ex.
 ```
 spark-submit                                      \
 --class com.github.sparkcaller.SparkCaller        \
+--conf spark.executor.cores=8                     \
 --executor-memory 16G                             \
 --driver-memory  6G                               \
 sparkcaller-1.0.jar                               \
