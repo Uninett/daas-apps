@@ -109,13 +109,10 @@ recommended to allocate up to 32 cores to the driver node.
 It is also recommended to set `spark.driver.maxResultSize` to something high,
 as the result may be large.
 
-`spark.executor.cores` and `spark.driver.cores` can, respectively, be used to
-set how many cores to use per tool when distributed to workers, and how many
-cores to use for sequential work (such as merging).
-
-`spark.task.cpus` can be used to set how many cores to use per task. It is
-recommended, based on experiments, to set this to about 1/2 of
-`spark.executor.cores`, but this varies with the dataset. At most four tasks
+`spark.executor.cores` can be used to set how many cores to use per tool when
+distributed to workers.  `spark.task.cpus` can be used to set how many cores to
+use per task. It is recommended, based on experiments, to set this to about 1/2
+of `spark.executor.cores`, but this varies with the dataset. At most four tasks
 should be active at each worker at a time, as otherwise the tasks quickly will
 begin to interfer with each other when many GATK tools are run on the same
 worker.
