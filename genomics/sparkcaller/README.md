@@ -105,6 +105,12 @@ public FTP
 server](http://gatkforums.broadinstitute.org/gatk/discussion/1215/how-can-i-access-the-gsa-public-ftp-server).
 
 ### Recommended Spark settings
+TL;DR:
+```
+--conf spark.driver.maxResultSize = 0
+--conf spark.executor.cores = (Number of available cores per node)
+--conf spark.task.cpus = (~1/2 of spark.executor.cores)
+```
 SparkCaller uses the driver when merging BAM and VCF files, it is thus also
 recommended to allocate up to 32 cores to the driver node.
 
