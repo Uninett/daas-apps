@@ -83,8 +83,7 @@ public class MiscUtils {
     }
 
     public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) {
-        //String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
-        String pathToUnpackedBinary = "/home/paal/Desktop/genomics/tools/samtools-1.3.1/samtools";
+        String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
 
         if (pathToUnpackedBinary == null) {
             System.err.println("Could not find binary: " + binaryName);
