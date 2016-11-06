@@ -137,3 +137,20 @@ The following dependencies are required, but not provided inside the JAR:
 
 ### GCAT test results
 * [Illumina 100bp pair-ended exome 30x](http://www.bioplanet.com/gcat/reports/8098-jbosisorkp/variant-calls/illumina-100bp-pe-exome-30x/sparkbwa-sparkcaller/compare-8088-uxcggxlhzc-7997-cqiyxsnvoq/group-read-depth)
+
+### Benchmarking data
+The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset. The
+small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
+dataset. These datasets can be obtained [here](ahttp://www.bioplanet.com/gcat)
+by clicking 'Start Test' and creating a test.
+
+
+![HaplotypeCaller benchmarking large dataset](img/haplotypecaller_large.png "")
+![HaplotypeCaller benchmarking small dataset](img/haplotypecaller_small.png "")
+
+![BQSR benchmarking large dataset](img/bqsr_large.png "")
+![BQSR benchmarking small dataset](img/bqsr_small.png "")
+
+![Indel realignment benchmarking large dataset](img/indel_realignment_large.png "")
+![indel realignment benchmarking small dataset](img/indel_realignment_small.png "")
+
