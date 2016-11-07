@@ -69,9 +69,6 @@ a subfolder inside the folder where the dataset was read from.
 ```
 spark-submit                                      \
 --class com.github.sparkcaller.SparkCaller        \
---conf spark.executor.cores=<num cores per node>  \
---executor-memory <RAM per executor>              \
---driver-memory  <driver RAM>                     \
 sparkcaller-1.0.jar                               \
 -C <Path to config file>                          \
 -R <Path to reference file>                       \
@@ -83,9 +80,6 @@ Ex.
 ```
 spark-submit                                      \
 --class com.github.sparkcaller.SparkCaller        \
---conf spark.executor.cores=8                     \
---executor-memory 16G                             \
---driver-memory  6G                               \
 sparkcaller-1.0.jar                               \
 -C sparkcaller.properties                         \
 -R /data/hdfs/1000genomes/hg19/ucsc.hg19.fasta    \
