@@ -60,7 +60,7 @@ The input, reference, and output arguments are set automatically for all tools.
 
 ### Usage
 SparkCaller is capable of processing several datasets at the same time. The
-`-I` option is used to specifiy the folder where the input dataset(s) can be
+`-I` option is used to specify the folder where the input dataset(s) can be
 found. If the input folder contains subfolders, each of these will be assumed
 to be a seperate dataset. The output files are automatically stored in
 a subfolder inside the folder where the dataset was read from.
