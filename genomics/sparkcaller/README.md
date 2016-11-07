@@ -151,6 +151,7 @@ small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
 dataset. These datasets can be obtained [here](http://www.bioplanet.com/gcat)
 by clicking 'Start Test' and creating a test.
 
+Each data point is an average of three runs using the same settings.
 
 ![HaplotypeCaller benchmarking large dataset](img/haplotypecaller_large.png "")
 ![HaplotypeCaller benchmarking small dataset](img/haplotypecaller_small.png "")
