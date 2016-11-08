@@ -73,7 +73,7 @@ sparkcaller-1.0.jar                               \
 -C <Path to config file>                          \
 -R <Path to reference file>                       \
 -I <Path to the folder containing the SAM files>  \
--S <Path to known sites>
+[-S <Path to known sites>] # Only required when BQSR should be performed.
 ```
 
 Ex.

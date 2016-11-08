@@ -342,7 +342,7 @@ public class SparkCaller {
         options.addOption(inputFolder);
 
         Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
-        knownSites.setRequired(true);
+        knownSites.setRequired(false);
         options.addOption(knownSites);
 
         Option configFile = new Option("C", "ConfigFile", true, "The path to the file configuration file.");
@@ -384,6 +384,11 @@ public class SparkCaller {
         String knownSites = cmdArgs.getOptionValue("KnownSites");
         String configFilepath = cmdArgs.getOptionValue("ConfigFile");
         Properties toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
+
+        if (knownSites == null && toolsExtraArguments.get("BaseRecalibrator") != null) {
+            System.out.println("-S <Path to dbsnp> must be set if BQSR is to be performed, as this is required by the GATK toolkit.");
+            System.exit(1);
+        }
 
         String coresPerNode = sparkContext.getConf().get("spark.executor.cores", "4");
 
