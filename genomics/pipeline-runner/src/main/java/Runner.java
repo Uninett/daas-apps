@@ -1,13 +1,20 @@
 import com.github.sparkbwa.BwaInterpreter;
 import com.github.sparkbwa.BwaOptions;
 import com.github.sparkcaller.SparkCaller;
+import com.github.sparkcaller.utils.MiscUtils;
+import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+
 public class Runner {
+
     public static Options initCommandLineOptions() {
         Options options = new Options();
 
@@ -20,33 +27,17 @@ public class Runner {
         reference.setRequired(true);
         options.addOption(reference);
 
-        Option bwaAlgorithm = new Option("bwa", "BWAalg", true, "The algorithm to use when running BWA.");
-        bwaAlgorithm.setRequired(true);
-        options.addOption(bwaAlgorithm);
-
-        Option reads = new Option("reads", "Reads", true, "Whether the reads are paired or single.");
-        reads.setRequired(true);
-        options.addOption(reads);
-
-        Option outputFolder = new Option("O", "OutputFolder", true, "The path to the folder which will store the final output files.");
-        outputFolder.setRequired(true);
-        options.addOption(outputFolder);
-
-        Option knownSites = new Option("S", "KnownSites", true, "The path to the file containing known sites (used in BQSR).");
-        knownSites.setRequired(true);
+        Option knownSites = new Option("dbsnp", "KnownSits", true, "The path to the known sites file (only required when running BQSR).");
+        knownSites.setRequired(false);
         options.addOption(knownSites);
 
+        Option bwaAlgorithm = new Option("bwa", "BWAalg", true, "The algorithm to use when running BWA.");
+        bwaAlgorithm.setRequired(false);
+        options.addOption(bwaAlgorithm);
+
         Option configFile = new Option("C", "ConfigFile", true, "The path to the file configuration file.");
-        configFile.setRequired(true);
+        configFile.setRequired(false);
         options.addOption(configFile);
-
-        Option threads = new Option("CPN", "CoresPerNode", true, "The number of available cores per node.");
-        threads.setRequired(true);
-        options.addOption(threads);
-
-        Option availableNodes = new Option("N", "AvailableNodes", true, "The number of available nodes.");
-        availableNodes.setRequired(true);
-        options.addOption(availableNodes);
 
         return options;
     }
@@ -69,23 +60,41 @@ public class Runner {
 
 
     public static JavaSparkContext initSpark(String appName) {
-        SparkConf conf = new SparkConf().setAppName(appName).setMaster("local[*]");
+        SparkConf conf = new SparkConf().setAppName(appName);
         JavaSparkContext sparkContext = new JavaSparkContext(conf);
 
         return sparkContext;
     }
 
-    public static BwaOptions initSparkBwaOptions(CommandLine bwaOptions, Properties extraArgs) {
+    public static ArrayList<String> getFilesInFolder(String pathToFolder) {
+        File folder = new File(pathToFolder);
+        File[] listOfFiles = folder.listFiles();
+
+        if (listOfFiles != null) {
+            ArrayList<String> fastqFiles = new ArrayList<String>();
+
+            for (File file : listOfFiles) {
+                String fileName = file.getName().toLowerCase();
+                if (fileName.endsWith("fastq") || fileName.endsWith("bam")) {
+                    fastqFiles.add(file.getPath());
+                }
+            }
+            return fastqFiles;
+        }
+
+        throw new ValueException("The folder: %s is either empty or was not found!", folder.getName());
+     }
+
+
+    public static BwaOptions initSparkBwaOptions(CommandLine bwaOptions, Properties extraArgs, JavaSparkContext sparkContext) {
         String reference = bwaOptions.getOptionValue("Reference");
-        String outputDir = bwaOptions.getOptionValue("OutputFolder");
-        String bwaMode = bwaOptions.getOptionValue("Reads");
-        String threads = bwaOptions.getOptionValue("CoresPerNode");
-        String numNodes = bwaOptions.getOptionValue("AvailableNodes");
         String bwaAlg = bwaOptions.getOptionValue("BWAalg");
-        String inputFastq[] = bwaOptions.getOptionValues("Input");
+        String inputFastqFolder = bwaOptions.getOptionValue("Input");
 
         BwaOptions sparkBwaOptions = new BwaOptions();
-        if (bwaAlg.equals("aln")) {
+        if (bwaAlg == null) {
+            System.out.println("BWA algorithm not given! Defaulting to mem.");
+        } else if (bwaAlg.equals("aln")) {
             sparkBwaOptions.setAlnAlgorithm(true);
             sparkBwaOptions.setMemAlgorithm(false);
         } else if (bwaAlg.equals("bwasw")) {
@@ -95,8 +104,30 @@ public class Runner {
             sparkBwaOptions.setMemAlgorithm(true);
         }
 
+        List<String> files = getFilesInFolder(inputFastqFolder);
+        String inputFilePath = files.get(0);
+        sparkBwaOptions.setInputPath(inputFilePath);;
+        System.out.println("Setting: " + inputFilePath + " as an input file.");
+
+        if (files.size() == 2) {
+            String inputFile2Path = files.get(1);
+            sparkBwaOptions.setInputPath2(inputFile2Path);
+            System.out.println("Setting: " + inputFile2Path + " as an input file.");
+            sparkBwaOptions.setPairedReads(true);
+            sparkBwaOptions.setSingleReads(false);
+            System.out.println("Running in paired mode.");
+        } else if (files.size() > 2) {
+            throw new ValueException("More than two fastq files was found in: " + inputFastqFolder);
+        } else {
+            sparkBwaOptions.setSingleReads(true);
+            sparkBwaOptions.setPairedReads(false);
+            System.out.println("Running in single mode.");
+        }
+
         sparkBwaOptions.setIndexPath(reference);
-        sparkBwaOptions.setPartitionNumber(Integer.parseInt(numNodes));
+
+        sparkBwaOptions.setPartitionNumber(sparkContext.sc().getExecutorStorageStatus().length);
+        String threads = sparkContext.getConf().get("spark.executor.cores", "4");
 
         String bwaArgs = extraArgs.getProperty("bwa");
         if (bwaArgs != null) {
@@ -106,52 +137,50 @@ public class Runner {
             sparkBwaOptions.setBwaArgs(bwaArgs);
         }
 
-        if (bwaMode.equals("single")) {
-            sparkBwaOptions.setSingleReads(true);
-            sparkBwaOptions.setPairedReads(false);
-        } else {
-            sparkBwaOptions.setPairedReads(true);
-        }
-
-        sparkBwaOptions.setInputPath(inputFastq[0]);
-        if (inputFastq.length == 2) {
-            sparkBwaOptions.setInputPath2(inputFastq[0]);
-        }
-
-        sparkBwaOptions.setOutputPath(outputDir);
+        String pipelineRunnerOutputPostfix = "runner-" + sparkContext.sc().applicationId();
+        sparkBwaOptions.setOutputPath(inputFastqFolder + "/" + pipelineRunnerOutputPostfix);
 
         return sparkBwaOptions;
     }
 
-    public static BwaInterpreter initSparkBwa(JavaSparkContext sparkContext, CommandLine bwaOptions, Properties extraArgs) {
-        BwaOptions sparkBwaOptions = initSparkBwaOptions(bwaOptions, extraArgs);
-        return new BwaInterpreter(sparkBwaOptions, sparkContext.sc());
-    }
-
     public static SparkCaller initSparkCaller(JavaSparkContext sparkContext, CommandLine gatkOptions, Properties extraArgs) {
         String pathToReference = gatkOptions.getOptionValue("Reference");
-        String outputDirectory = gatkOptions.getOptionValue("OutputFolder");
         String knownSites = gatkOptions.getOptionValue("KnownSites");
-        String coresPerNode = gatkOptions.getOptionValue("CoresPerNode");
+        String coresPerNode = sparkContext.getConf().get("spark.executor.cores", "4");
 
-        return new SparkCaller(sparkContext, pathToReference, knownSites, extraArgs, coresPerNode, outputDirectory);
+        return new SparkCaller(sparkContext, pathToReference, knownSites, extraArgs, coresPerNode);
     }
 
-    public static void main(String argv[]) {
+    public static void main(String argv[]) throws IOException {
+        JavaSparkContext sparkContext = Runner.initSpark("Pipeline runner");
+
         Options options = Runner.initCommandLineOptions();
         CommandLine args = parseCommandLineOptions(options, argv);
 
-        JavaSparkContext sparkContext = Runner.initSpark("Pipeline runner");
-
         String configFilepath = args.getOptionValue("ConfigFile");
-        Properties toolsExtraArguments = com.github.sparkcaller.Utils.loadConfigFile(configFilepath);
+        Properties toolsExtraArguments;
 
-        BwaInterpreter bwaInterpreter = Runner.initSparkBwa(sparkContext, args, toolsExtraArguments);
-        bwaInterpreter.RunBwa();
+        if (configFilepath != null) {
+            toolsExtraArguments = MiscUtils.loadConfigFile(configFilepath);
+        } else {
+            toolsExtraArguments = new Properties();
+            try {
+                System.out.println("Using default arguments.");
+                toolsExtraArguments.load(Runner.class.getResourceAsStream("/default_args.properties"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new IOException("Could not read properties file!");
+            }
+        }
+
+
+        BwaOptions sparkBwaOptions = initSparkBwaOptions(args, toolsExtraArguments, sparkContext);
+        BwaInterpreter bwaInterpreter = new BwaInterpreter(sparkBwaOptions, sparkContext.sc());
+        bwaInterpreter.runBwa();
 
         SparkCaller sparkCaller = initSparkCaller(sparkContext, args, toolsExtraArguments);
 
-        String pathToSAMFiles = args.getOptionValue("OutputFolder");
+        String pathToSAMFiles = sparkBwaOptions.getOutputPath();
         sparkCaller.runPipeline(pathToSAMFiles);
     }
 }
