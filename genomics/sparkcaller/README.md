@@ -142,8 +142,7 @@ The following dependencies are required, but not provided inside the JAR:
 ### Benchmarking data
 The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset. The
 small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
-dataset. These datasets can be obtained [here](http://www.bioplanet.com/gcat)
-by clicking 'Start Test' and creating a test.
+dataset. These datasets can be obtained [here](https://f.128.no/gcat/).
 
 Each data point is an average of three runs using the same settings.
 

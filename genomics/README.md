@@ -33,8 +33,7 @@ using Spark")
 The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset.
 small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
 dataset. These datasets can be obtained
-[here](http://www.bioplanet.com/gcat)
-by clicking 'Start Test' and creating a test.
+[here](https://f.128.no/gcat/).
 
 Each data point is an average of three runs using the same settings.
 
