@@ -38,6 +38,13 @@ by clicking 'Start Test' and creating a test.
 
 Each data point is an average of three runs using the same settings.
 
+
+![SparkBWA small](img/bwa_small.png "The runtime of the BWA and SparkBWA
+on the small dataset")
+
+![SparkBWA large](img/bwa_large.png "The runtime of the BWA and SparkBWA
+on the large dataset")
+
 ![Whole pipeline small](img/whole_pipeline_small.png "The runtime of the whole
 pipeline on the small dataset")
 
