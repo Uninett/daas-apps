@@ -28,3 +28,18 @@ tool.
 
 ![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
 using Spark")
+
+### Benchmarks
+The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset.
+small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
+dataset. These datasets can be obtained
+[here](http://www.bioplanet.com/gcat)
+by clicking 'Start Test' and creating a test.
+
+Each data point is an average of three runs using the same settings.
+
+![Whole pipeline small](img/whole_pipeline_small.png "The runtime of the whole
+pipeline on the small dataset")
+
+![Whole pipeline large](img/whole_pipeline_large.png "The runtime of the whole
+pipeline on the large dataset")
