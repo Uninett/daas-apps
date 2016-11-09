@@ -27,7 +27,7 @@ public class Runner {
         reference.setRequired(true);
         options.addOption(reference);
 
-        Option knownSites = new Option("dbsnp", "KnownSits", true, "The path to the known sites file (only required when running BQSR).");
+        Option knownSites = new Option("S", "KnownSits", true, "The path to the known sites file (only required when running BQSR).");
         knownSites.setRequired(false);
         options.addOption(knownSites);
 
