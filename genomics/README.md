@@ -32,6 +32,9 @@ This program can be used to run the entire pipeline shown below as a single
 program. All the required dependencies (except Spark and scala) is packaged inside
 the JAR file.
 
+![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
+using Spark")
+
 #### Usage
 The only arguments that are required is the path to the input folder and the
 path to the reference file. If you want to run BQSR, you also have to provide
@@ -59,9 +62,6 @@ structured.
 
 #### How to build the JAR for pipeline-runner
 Run `cd pipeline-runner && mvn clean package` to build the JAR file.
-
-![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
-using Spark")
 
 ### Benchmarks
 The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset.
