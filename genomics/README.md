@@ -72,12 +72,14 @@ dataset. These datasets can be obtained
 Each data point is an average of three runs using the same settings.
 
 
+#### SparkBWA benchmarks
 ![SparkBWA small](img/bwa_small.png "The runtime of the BWA and SparkBWA
 on the small dataset")
 
 ![SparkBWA large](img/bwa_large.png "The runtime of the BWA and SparkBWA
 on the large dataset")
 
+#### Whole pipeline benchmarks
 ![Whole pipeline small](img/whole_pipeline_small.png "The runtime of the whole
 pipeline on the small dataset")
 
