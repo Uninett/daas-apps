@@ -26,7 +26,7 @@ tool.
 * It is preferred that NFS is used over HDFS, as GATK seemingly has some
   problem when writing to HDFS.
 
-### Pipeline runner
+### Running the whole pipeline using pipeline-runner
 
 This program can be used to run the entire pipeline shown below as a single
 program. All the required dependencies (except Spark and scala) is packaged inside
