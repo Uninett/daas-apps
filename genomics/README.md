@@ -79,7 +79,7 @@ on the small dataset")
 ![SparkBWA large](img/bwa_large.png "The runtime of the BWA and SparkBWA
 on the large dataset")
 
-#### Whole pipeline benchmarks
+#### Whole pipeline benchmarks (SparkBWA + SparkCaller)
 ![Whole pipeline small](img/whole_pipeline_small.png "The runtime of the whole
 pipeline on the small dataset")
 
