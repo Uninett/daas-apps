@@ -26,6 +26,40 @@ tool.
 * It is preferred that NFS is used over HDFS, as GATK seemingly has some
   problem when writing to HDFS.
 
+### Pipeline runner
+
+This program can be used to run the entire pipeline shown below as a single
+program. All the required dependencies (except Spark and scala) is packaged inside
+the JAR file.
+
+#### Usage
+The only arguments that are required is the path to the input folder and the
+path to the reference file. If you want to run BQSR, you also have to provide
+a dbSNP file.
+
+Example usage:
+```
+spark-submit                                        \
+--class Runner                                      \
+pipeline-runner-1.0.jar                             \
+-R <Path to reference file>                         \
+-I <Path to the folder containing the FASTQ files>  \
+[-C <Path to config file>] # Defaults to 'default_args.properties' if not given
+[-S <Path to known sites>] # Only required when BQSR should be performed
+```
+
+Keep in mind that the input directory must at most contain two FASTQ files, as
+processing multiple datasets is currently not supported in SparkBWA.
+pipeline-runner will automatically determine whether the files are pair-ended
+or not based on the amount of input files.
+
+Arguments for all of the tools in the pipeline can be provided by specifying
+a config file. See `config_example.properties` to see how this file is
+structured.
+
+#### How to build the JAR for pipeline-runner
+Run `cd pipeline-runner && mvn clean package` to build the JAR file.
+
 ![GATK Workflow](img/spark_bio_workflow.png "Parts of the GATK workflow implemented
 using Spark")
 
