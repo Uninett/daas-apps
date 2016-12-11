@@ -9,14 +9,15 @@ a familiar interface, while (in most cases) improving the performance of each
 tool.
 
 ### Tools
-* **SparkBWA** is a short read aligner which uses
+* **SparkAligner** is a short read aligner which can use
   [BWA](http://bio-bwa.sourceforge.net/) and Spark to
-  perform alignment in a distributed manner.
+  perform alignment in a distributed manner. It is also possible to add
+  support for new aligners.
 * **SparkCaller** is used both preprocesses the file obtained from
-  SparkBWA and does variant discovery. It uses the [GATK
+  SparkAligner and does variant discovery. It uses the [GATK
   toolkit](https://www.google.no/search?q=GATK+bqsr&oq=GATK&aqs=chrome.0.69i59j69i57j69i60l4.431j0j1&sourceid=chrome&ie=UTF-8#safe=off&q=GATK+) to perform the
   analysis.
-* **Pipeline runner** is a tool for running SparkBWA and SparkCaller as
+* **Pipeline runner** is a tool for running SparkAligner and SparkCaller as
   a single pipeline in a standalone JAR file.
 
 ### Requirements
