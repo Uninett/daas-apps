@@ -20,15 +20,16 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.spark</exclude>
-                                </excludes>
-                            </artifactSet>
-                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -43,9 +44,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.sparkbwa</groupId>
-            <artifactId>sparkbwa</artifactId>
-            <version>1.0</version>
+            <groupId>com.github.sparkaligner</groupId>
+            <artifactId>sparkaligner</artifactId>
+            <version>1.1.4</version>
         </dependency>
 
         <dependency>

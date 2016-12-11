@@ -1,15 +1,11 @@
-import com.github.sparkbwa.BwaInterpreter;
-import com.github.sparkbwa.BwaOptions;
+import com.github.sparkaligner.BaseAligner;
+import com.github.sparkaligner.aligners.bwa.Bwa;
 import com.github.sparkcaller.SparkCaller;
 import com.github.sparkcaller.utils.MiscUtils;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.cli.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 
@@ -27,13 +23,13 @@ public class Runner {
         reference.setRequired(true);
         options.addOption(reference);
 
-        Option knownSites = new Option("S", "KnownSits", true, "The path to the known sites file (only required when running BQSR).");
+        Option alignerName = new Option("A", "AlignerName", true, "The aligner to use when aligning FASTQ files.");
+        alignerName.setRequired(false);
+        options.addOption(alignerName);
+
+        Option knownSites = new Option("S", "KnownSites", true, "The path to the known sites file (only required when running BQSR).");
         knownSites.setRequired(false);
         options.addOption(knownSites);
-
-        Option bwaAlgorithm = new Option("bwa", "BWAalg", true, "The algorithm to use when running BWA.");
-        bwaAlgorithm.setRequired(false);
-        options.addOption(bwaAlgorithm);
 
         Option configFile = new Option("C", "ConfigFile", true, "The path to the file configuration file.");
         configFile.setRequired(false);
@@ -66,83 +62,6 @@ public class Runner {
         return sparkContext;
     }
 
-    public static ArrayList<String> getFilesInFolder(String pathToFolder) {
-        File folder = new File(pathToFolder);
-        File[] listOfFiles = folder.listFiles();
-
-        if (listOfFiles != null) {
-            ArrayList<String> fastqFiles = new ArrayList<String>();
-
-            for (File file : listOfFiles) {
-                String fileName = file.getName().toLowerCase();
-                if (fileName.endsWith("fastq") || fileName.endsWith("bam")) {
-                    fastqFiles.add(file.getPath());
-                }
-            }
-            return fastqFiles;
-        }
-
-        throw new ValueException("The folder: %s is either empty or was not found!", folder.getName());
-     }
-
-
-    public static BwaOptions initSparkBwaOptions(CommandLine bwaOptions, Properties extraArgs, JavaSparkContext sparkContext) {
-        String reference = bwaOptions.getOptionValue("Reference");
-        String bwaAlg = bwaOptions.getOptionValue("BWAalg");
-        String inputFastqFolder = bwaOptions.getOptionValue("Input");
-
-        BwaOptions sparkBwaOptions = new BwaOptions();
-        if (bwaAlg == null) {
-            System.out.println("BWA algorithm not given! Defaulting to mem.");
-        } else if (bwaAlg.equals("aln")) {
-            sparkBwaOptions.setAlnAlgorithm(true);
-            sparkBwaOptions.setMemAlgorithm(false);
-        } else if (bwaAlg.equals("bwasw")) {
-            sparkBwaOptions.setBwaswAlgorithm(true);
-            sparkBwaOptions.setMemAlgorithm(false);
-        } else {
-            sparkBwaOptions.setMemAlgorithm(true);
-        }
-
-        List<String> files = getFilesInFolder(inputFastqFolder);
-        String inputFilePath = files.get(0);
-        sparkBwaOptions.setInputPath(inputFilePath);;
-        System.out.println("Setting: " + inputFilePath + " as an input file.");
-
-        if (files.size() == 2) {
-            String inputFile2Path = files.get(1);
-            sparkBwaOptions.setInputPath2(inputFile2Path);
-            System.out.println("Setting: " + inputFile2Path + " as an input file.");
-            sparkBwaOptions.setPairedReads(true);
-            sparkBwaOptions.setSingleReads(false);
-            System.out.println("Running in paired mode.");
-        } else if (files.size() > 2) {
-            throw new ValueException("More than two fastq files was found in: " + inputFastqFolder);
-        } else {
-            sparkBwaOptions.setSingleReads(true);
-            sparkBwaOptions.setPairedReads(false);
-            System.out.println("Running in single mode.");
-        }
-
-        sparkBwaOptions.setIndexPath(reference);
-
-        sparkBwaOptions.setPartitionNumber(sparkContext.sc().getExecutorStorageStatus().length);
-        String threads = sparkContext.getConf().get("spark.executor.cores", "4");
-
-        String bwaArgs = extraArgs.getProperty("bwa");
-        if (bwaArgs != null) {
-            if (!bwaArgs.contains("-t")) {
-                bwaArgs = bwaArgs + " -t " + threads;
-            }
-            sparkBwaOptions.setBwaArgs(bwaArgs);
-        }
-
-        String pipelineRunnerOutputPostfix = "runner-" + sparkContext.sc().applicationId();
-        sparkBwaOptions.setOutputPath(inputFastqFolder + "/" + pipelineRunnerOutputPostfix);
-
-        return sparkBwaOptions;
-    }
-
     public static SparkCaller initSparkCaller(JavaSparkContext sparkContext, CommandLine gatkOptions, Properties extraArgs) {
         String pathToReference = gatkOptions.getOptionValue("Reference");
         String knownSites = gatkOptions.getOptionValue("KnownSites");
@@ -172,15 +91,28 @@ public class Runner {
                 throw new IOException("Could not read properties file!");
             }
         }
+        String alignerName = args.getOptionValue("AlignerName");
+        // Default to BWA if no aligner was given.
+        if (alignerName == null) {
+            alignerName = "bwa";
+        }
 
+        BaseAligner aligner = null;
+        switch (alignerName) {
+            case "bwa":
+                aligner = new Bwa(sparkContext, argv);
+                break;
+        }
 
-        BwaOptions sparkBwaOptions = initSparkBwaOptions(args, toolsExtraArguments, sparkContext);
-        BwaInterpreter bwaInterpreter = new BwaInterpreter(sparkBwaOptions, sparkContext.sc());
-        bwaInterpreter.runBwa();
+        if (aligner != null) {
+            aligner.run();
+        } else {
+            System.err.println(alignerName + " was not found!");
+            System.exit(-2);
+        }
 
+        String pathToSAMFiles = args.getOptionValue("Input");
         SparkCaller sparkCaller = initSparkCaller(sparkContext, args, toolsExtraArguments);
-
-        String pathToSAMFiles = sparkBwaOptions.getOutputPath();
         sparkCaller.runPipeline(pathToSAMFiles);
     }
 }
