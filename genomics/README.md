@@ -71,6 +71,9 @@ dataset. These datasets can be obtained
 
 Each data point is an average of three runs using the same settings.
 
+SparkAligner should have the same performance as SparkBWA, as SparkAligner is
+just a generalization of SparkBWA.
+
 
 #### SparkBWA benchmarks
 ![SparkBWA small](img/bwa_small.png "The runtime of the BWA and SparkBWA
