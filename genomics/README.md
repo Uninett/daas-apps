@@ -51,12 +51,6 @@ pipeline-runner-1.0.jar                             \
 [-C <Path to config file>] # Defaults to 'default_args.properties' if not given
 [-S <Path to known sites>] # Only required when BQSR should be performed
 ```
-
-Keep in mind that the input directory must at most contain two FASTQ files, as
-processing multiple datasets is currently not supported in SparkBWA.
-pipeline-runner will automatically determine whether the files are pair-ended
-or not based on the amount of input files.
-
 Arguments for all of the tools in the pipeline can be provided by specifying
 a config file. See `config_example.properties` to see how this file is
 structured.
