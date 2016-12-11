@@ -1,4 +1,4 @@
-[submodule "genomics/SparkBWA"]
-	path = genomics/SparkBWA
-	url = https://github.com/paalka/SparkBWA
+[submodule "genomics/SparkAligner"]
+	path = genomics/SparkAligner
+	url = https://github.com/paalka/SparkAligner
 	branch = master
