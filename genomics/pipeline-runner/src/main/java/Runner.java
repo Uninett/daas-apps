@@ -47,7 +47,7 @@ public class Runner {
         } catch (ParseException e) {
             e.printStackTrace();
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("Pipeline runner", "", options, "", true);
+            formatter.printHelp("pipeline-runner", "", options, "", true);
             System.exit(1);
         }
 
@@ -71,7 +71,7 @@ public class Runner {
     }
 
     public static void main(String argv[]) throws IOException {
-        JavaSparkContext sparkContext = Runner.initSpark("Pipeline runner");
+        JavaSparkContext sparkContext = Runner.initSpark("pipeline-runner");
 
         Options options = Runner.initCommandLineOptions();
         CommandLine args = parseCommandLineOptions(options, argv);
