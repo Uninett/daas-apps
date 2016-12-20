@@ -30,6 +30,7 @@ public class BaseGATKProgram implements Serializable {
                 return;
             } catch (org.broadinstitute.gatk.utils.exceptions.ReviewedGATKException e) {
                 if (++numTries == maxRetries) {
+                    e.printStackTrace();
                     System.err.println("Failed to run GATK program " + maxRetries + " times!");
                     return;
                 } else {
