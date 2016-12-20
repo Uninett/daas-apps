@@ -33,8 +33,8 @@ public class BaseGATKProgram implements Serializable {
                     System.err.println("Failed to run GATK program " + maxRetries + " times!");
                     return;
                 } else {
-                    int random = (int)(2 * Math.random());
-                    Thread.sleep(random * 500);
+                    int random = (int)(3 * Math.random() + 1);
+                    Thread.sleep(random * 1000);
                 }
             }
         }
