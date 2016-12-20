@@ -32,6 +32,9 @@ public class BaseGATKProgram implements Serializable {
                 if (++numTries == maxRetries) {
                     System.err.println("Failed to run GATK program " + maxRetries + " times!");
                     return;
+                } else {
+                    int random = (int)(2 * Math.random());
+                    Thread.sleep(random * 500);
                 }
             }
         }
