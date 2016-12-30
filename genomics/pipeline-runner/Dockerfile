@@ -9,7 +9,7 @@ ENV TEST_DATA_SHA256 9ae9e48241e3a08a354d0d9514071fae1c964a84f49473fe1772e2dac81
 
 RUN wget -q "https://f.128.no/genomics/${PIPELINE_RUNNER}" && \
     echo "${PIPELINE_RUNNER_SHA256} ${PIPELINE_RUNNER}" | sha256sum -c - && \
-    mv pipeline-runner-1.0.jar /usr/local/bin/${PIPELINE_RUNNER} && \
+    mv ${PIPELINE_RUNNER} /usr/local/bin/${PIPELINE_RUNNER} && \
     chmod +x /usr/local/bin/${PIPELINE_RUNNER}
 
 RUN wget -q "https://f.128.no/genomics/${TEST_DATA}" && \
