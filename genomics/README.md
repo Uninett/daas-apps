@@ -58,6 +58,35 @@ structured.
 #### How to build the JAR for pipeline-runner
 Run `cd pipeline-runner && mvn clean package` to build the JAR file.
 
+#### How to run pipeline-runner using Docker
+pipeline-runner can also be run using the provided Dockerfile. This docker
+image provides all the dependencies needed to run pipeline-runner.
+
+The docker image can also be found [here](https://hub.docker.com/r/paalka/pipeline-runner/).
+
+The pipeline-runner can then be started using:
+```
+docker run                                                                   \
+-it                                                                          \
+-v <path to data folder>:<path to mount the data folder inside to container> \
+paalka/pipeline-runner                                                       \
+<regular pipeline-runner arguments here>
+```
+
+Ex.
+```
+docker run                         \
+-it                                \
+-v /var/data:/data                 \
+paalka/pipeline-runner             \
+-A bwa                             \
+-R /data/hg19/ucsc.hg19.fasta      \
+-I /data/gcat/053/                 \
+-S /data/dbsnp/dbsnp_138.hg19.vcf  \
+-C /data/config.properties
+```
+
+
 ### Benchmarks
 The large dataset is the Illumina 100bp pair-ended exome 150x GCAT dataset.
 small dataset refers to the Ion Torrent 225bp single-ended exome 30x GCAT
