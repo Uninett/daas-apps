@@ -1,4 +1,4 @@
-FROM gurvin/spark-base
+FROM gurvin/spark-base:2.0.1
 MAINTAINER Pål Karlsrud <paal@128.no>
 
 ENV PIPELINE_RUNNER pipeline-runner-1.0.jar
