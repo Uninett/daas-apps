@@ -63,6 +63,8 @@ pipeline-runner can also be run using the provided Dockerfile. This docker
 image provides all the dependencies needed to run pipeline-runner.
 
 The docker image can also be found [here](https://hub.docker.com/r/paalka/pipeline-runner/).
+This docker image also downloads a test dataset (the Lambda phage dataset)
+from [f.128.no](http://f.128.no/genomics/test_data/)).
 
 The pipeline-runner can then be started using:
 ```
@@ -73,17 +75,27 @@ paalka/pipeline-runner                                                       \
 <regular pipeline-runner arguments here>
 ```
 
-Ex.
+Ex. run using the provided data:
 ```
-docker run                         \
--it                                \
--v /var/data:/data                 \
-paalka/pipeline-runner             \
--A bwa                             \
--R /data/hg19/ucsc.hg19.fasta      \
--I /data/gcat/053/                 \
--S /data/dbsnp/dbsnp_138.hg19.vcf  \
--C /data/config.properties
+docker run                                              \
+-it                                                     \
+paalka/pipeline-runner                                  \
+-R /usr/local/share/test_data/reference/lambda_virus.fa \
+-I /usr/local/share/test_data/data/                     \
+-S /usr/local/share/test_data/data/consensus.vcf        
+```
+note this this will only save the output VCF inside the container.
+
+In order to keep the VCF file, you need to mount the data directory to the
+container, ex:
+```
+docker run                              \
+-it                                     \
+-v /data/<path to test data>:/test_data \
+paalka/pipeline-runner                  \
+-R /test_data/reference/lambda_virus.fa \
+-I /test_data/data/                     \
+-S /test_data/data/consensus.vcf           
 ```
 
 
