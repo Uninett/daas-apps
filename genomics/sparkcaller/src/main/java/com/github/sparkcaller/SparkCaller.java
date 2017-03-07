@@ -189,8 +189,21 @@ public class SparkCaller {
 
         // Use the length of the contigs to determine which partition they should be in.
         final int coresPerTask = this.sparkContext.getConf().getInt("spark.task.cpus", 4);
-        final int contigsPerPartition = Integer.parseInt(this.coresPerNode) / coresPerTask;
+        final int numCoresPerNode = Integer.parseInt(this.coresPerNode);
+
+        if (numCoresPerNode <= 0) {
+            this.log.info("Invalid number of cores per node: " + numCoresPerNode + " must be a positive integer.");
+            System.exit(1);
+        }
+
+        int contigsPerPartition = numCoresPerNode / coresPerTask;
         Map<String, Integer> contigPartitionMapping = new HashMap<>();
+
+        if (contigsPerPartition <= 0) {
+            this.log.info("Invalid number of contigs per partition! Defaulting to 4.");
+            contigsPerPartition = 4;
+        }
+
         final int numPartitions = (int) Math.ceil(totalNumContigs / contigsPerPartition);
 
         long[] contigLengthPartitions = new long[numPartitions];
