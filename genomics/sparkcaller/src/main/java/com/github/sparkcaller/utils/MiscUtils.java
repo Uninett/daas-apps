@@ -64,10 +64,13 @@ public class MiscUtils {
     }
 
     public static File moveToDir(File fileToCopy, String targetPath) throws IOException {
+        System.err.println("Attempting to move: " + fileToCopy.getAbsolutePath() + " to " + targetPath);
         File outputFile = new File(targetPath, fileToCopy.getName());
 
         if (!outputFile.exists()) {
             FileUtils.moveFile(fileToCopy, outputFile);
+        } else {
+            System.err.println(outputFile.getAbsoluteFile() + " already exists!");
         }
 
         return outputFile;
@@ -83,6 +86,7 @@ public class MiscUtils {
     }
 
     public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) {
+        System.err.println("Attempting to extract: " + binaryName);
         String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
 
         if (pathToUnpackedBinary == null) {
@@ -90,6 +94,7 @@ public class MiscUtils {
             return -1;
         }
 
+        System.err.println(binaryName + " extracted!");
         arguments.add(0, pathToUnpackedBinary);
         String[] cmdArray = arguments.toArray(new String[0]);
 
@@ -100,6 +105,7 @@ public class MiscUtils {
         Process p;
         while (true) {
             try {
+                System.err.println("Attempt " + numTries + " to run: " + String.join(" ", cmdArray));
                 p = Runtime.getRuntime().exec(cmdArray);
                 p.waitFor();
 
