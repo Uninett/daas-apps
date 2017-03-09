@@ -85,7 +85,7 @@ public class MiscUtils {
         return new ArrayList<>(Arrays.asList(args));
     }
 
-    public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) {
+    public static int executeResourceBinary(String binaryName, ArrayList<String> arguments) throws IOException {
         System.err.println("Attempting to extract: " + binaryName);
         String pathToUnpackedBinary = FileExtractor.extractExecutable(binaryName);
 

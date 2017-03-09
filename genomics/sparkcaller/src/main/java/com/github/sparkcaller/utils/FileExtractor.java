@@ -4,7 +4,7 @@ import java.io.*;
 
 public class FileExtractor {
 
-    public static String extractExecutable(String resourceFilePath) {
+    public static String extractExecutable(String resourceFilePath) throws IOException {
 
         if (!resourceFilePath.startsWith("/")) {
             resourceFilePath = "/" + resourceFilePath;
@@ -13,43 +13,38 @@ public class FileExtractor {
         if (resourceFilePath == null)
             return null;
 
-        try {
-            // Read the file we're looking for
-            InputStream fileStream = FileExtractor.class.getResourceAsStream(resourceFilePath);
+        // Read the file we're looking for
+        InputStream fileStream = FileExtractor.class.getResourceAsStream(resourceFilePath);
 
-            // Was the resource found?
-            if (fileStream == null)
-                return null;
-
-            // Grab the file name
-            String[] chopped = resourceFilePath.split("\\/");
-            String fileName = chopped[chopped.length-1];
-
-            // Store the temporary executable in the default temp directory.
-            File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName);
-
-            // Delete the file on VM exit
-            tempFile.deleteOnExit();
-
-            OutputStream out = new FileOutputStream(tempFile);
-
-            // Write the file to the temp file
-            byte[] buffer = new byte[1024];
-            int len = fileStream.read(buffer);
-            while (len != -1) {
-                out.write(buffer, 0, len);
-                len = fileStream.read(buffer);
-            }
-
-            fileStream.close();
-            out.close();
-
-            tempFile.setExecutable(true);
-            return tempFile.getAbsolutePath();
-
-        } catch (IOException e) {
+        // Was the resource found?
+        if (fileStream == null)
             return null;
+
+        // Grab the file name
+        String[] chopped = resourceFilePath.split("\\/");
+        String fileName = chopped[chopped.length-1];
+
+        // Store the temporary executable in the default temp directory.
+        File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName);
+
+        // Delete the file on VM exit
+        tempFile.deleteOnExit();
+
+        OutputStream out = new FileOutputStream(tempFile);
+
+        // Write the file to the temp file
+        byte[] buffer = new byte[1024];
+        int len = fileStream.read(buffer);
+        while (len != -1) {
+            out.write(buffer, 0, len);
+            len = fileStream.read(buffer);
         }
+
+        fileStream.close();
+        out.close();
+
+        tempFile.setExecutable(true);
+        return tempFile.getAbsolutePath();
     }
 }
 
