@@ -25,8 +25,8 @@ public class FileExtractor {
             String[] chopped = resourceFilePath.split("\\/");
             String fileName = chopped[chopped.length-1];
 
-            // Create our temp file
-            File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName, new File(""));
+            // Store the temporary executable in the default temp directory.
+            File tempFile = File.createTempFile("sparkcaller" + System.nanoTime(), fileName);
 
             // Delete the file on VM exit
             tempFile.deleteOnExit();
